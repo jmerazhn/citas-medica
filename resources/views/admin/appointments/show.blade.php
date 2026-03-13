@@ -159,8 +159,13 @@
                 </x-wire-card>
             </div>
 
-            {{-- Gráfica de peso --}}
-            @include('admin.partials.peso-chart', ['patient' => $appointment->patient])
+            {{-- Gráficas de crecimiento --}}
+            <div class="grid sm:grid-cols-2 gap-3">
+                @include('admin.partials.growth-chart', ['patient' => $appointment->patient, 'tipo' => 'peso'])
+                @include('admin.partials.growth-chart', ['patient' => $appointment->patient, 'tipo' => 'talla'])
+                @include('admin.partials.growth-chart', ['patient' => $appointment->patient, 'tipo' => 'perimetro_cefalico'])
+                @include('admin.partials.growth-chart', ['patient' => $appointment->patient, 'tipo' => 'imc'])
+            </div>
 
             {{-- Clínico --}}
             <div class="grid lg:grid-cols-2 gap-4">

@@ -80,8 +80,13 @@
                 ];
             @endphp
 
-            {{-- Gráfica de peso --}}
-            @include('admin.partials.peso-chart', ['patient' => $patient, 'class' => 'mb-4'])
+            {{-- Gráficas de crecimiento --}}
+            <div class="grid sm:grid-cols-2 gap-3 mb-4">
+                @include('admin.partials.growth-chart', ['patient' => $patient, 'tipo' => 'peso'])
+                @include('admin.partials.growth-chart', ['patient' => $patient, 'tipo' => 'talla'])
+                @include('admin.partials.growth-chart', ['patient' => $patient, 'tipo' => 'perimetro_cefalico'])
+                @include('admin.partials.growth-chart', ['patient' => $patient, 'tipo' => 'imc'])
+            </div>
 
             @forelse ($patient->appointments as $appt)
             <div x-data="{ open: false }" class="mb-3">
