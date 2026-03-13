@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Catalogos;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\Patologia;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 
 class PatologiaCatalogoController extends Controller
 {
+    use UppercasesTextFields;
+
     public function index()
     {
         return view('admin.catalogos.patologias.index');
@@ -25,6 +28,7 @@ class PatologiaCatalogoController extends Controller
             'nombre'      => 'required|string|max:255|unique:patologias,nombre',
             'descripcion' => 'nullable|string',
         ]);
+        $data = $this->uppercase($data, ['nombre', 'descripcion']);
         Patologia::create($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Guardado', 'text' => 'Patología creada.']);
         return redirect()->route('admin.catalogos.patologias.index');
@@ -41,6 +45,7 @@ class PatologiaCatalogoController extends Controller
             'nombre'      => 'required|string|max:255|unique:patologias,nombre,' . $patologia->id,
             'descripcion' => 'nullable|string',
         ]);
+        $data = $this->uppercase($data, ['nombre', 'descripcion']);
         $patologia->update($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Actualizado', 'text' => 'Patología actualizada.']);
         return redirect()->route('admin.catalogos.patologias.index');

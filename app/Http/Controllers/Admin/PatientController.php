@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\BloodType;
 use App\Models\Patient;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Session;
 
 class PatientController extends Controller
 {
+    use UppercasesTextFields;
+
     public function index()
     {
         return view('admin.patients.index');
@@ -39,6 +42,10 @@ class PatientController extends Controller
             'social_coverage_id'  => 'nullable|exists:social_coverages,id',
             'blood_type_id'       => 'nullable|exists:blood_types,id',
             'notas_importantes'   => 'nullable|string',
+        ]);
+
+        $data = $this->uppercase($data, [
+            'nombres', 'apellidos', 'madre', 'padre', 'domicilio', 'ciudad', 'telefono', 'notas_importantes',
         ]);
 
         $patient = Patient::create($data);
@@ -91,6 +98,10 @@ class PatientController extends Controller
             'social_coverage_id'  => 'nullable|exists:social_coverages,id',
             'blood_type_id'       => 'nullable|exists:blood_types,id',
             'notas_importantes'   => 'nullable|string',
+        ]);
+
+        $data = $this->uppercase($data, [
+            'nombres', 'apellidos', 'madre', 'padre', 'domicilio', 'ciudad', 'telefono', 'notas_importantes',
         ]);
 
         $patient->update($data);

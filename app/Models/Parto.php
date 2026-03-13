@@ -8,22 +8,26 @@ class Parto extends Model
 {
     protected $fillable = [
         'patient_id',
-        'embarazo_id',
         'fecha_parto',
-        'tipo_parto',
-        'semanas_gestacion',
+        'lugar',
+        'cesarea',
+        'motivo_cesarea',
+        'posicion',
+        'parto_tipo',
+        'apgar',
+        'parto_gamma',
+        'anestesia',
+        'observaciones',
         'peso_rn',
         'talla_rn',
-        'apgar_1',
-        'apgar_5',
-        'complicaciones',
-        'notas',
+        'pc_rn',
+        'ombligo_dias',
+        'observaciones_rn',
     ];
 
     protected $casts = [
-        'fecha_parto'  => 'date',
-        'peso_rn'      => 'decimal:2',
-        'talla_rn'     => 'decimal:1',
+        'fecha_parto' => 'date',
+        'cesarea'     => 'boolean',
     ];
 
     public function patient()

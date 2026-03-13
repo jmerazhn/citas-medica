@@ -9,15 +9,23 @@ class Embarazo extends Model
     protected $fillable = [
         'patient_id',
         'numero_embarazo',
-        'fecha_ultima_menstruacion',
-        'fecha_probable_parto',
+        'obstetra',
         'semanas_gestacion',
-        'notas',
+        'diabetes',
+        'hipertension',
+        'traumatismo',
+        'infecciones',
+        'asma',
+        'medicacion',
+        'observaciones',
     ];
 
     protected $casts = [
-        'fecha_ultima_menstruacion' => 'date',
-        'fecha_probable_parto'     => 'date',
+        'diabetes'     => 'boolean',
+        'hipertension' => 'boolean',
+        'traumatismo'  => 'boolean',
+        'infecciones'  => 'boolean',
+        'asma'         => 'boolean',
     ];
 
     public function patient()

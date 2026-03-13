@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Expediente;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\Patologia;
 use App\Models\Patient;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Session;
 
 class PatologiaPacienteController extends Controller
 {
+    use UppercasesTextFields;
+
     public function create(Patient $patient)
     {
         $patologias = Patologia::orderBy('nombre')->get();
@@ -25,6 +28,8 @@ class PatologiaPacienteController extends Controller
             'estado'            => 'required|in:activa,resuelta',
             'notas'             => 'nullable|string',
         ]);
+
+        $data = $this->uppercase($data, ['notas']);
 
         $patient->patologias()->create($data);
 
@@ -47,6 +52,8 @@ class PatologiaPacienteController extends Controller
             'estado'            => 'required|in:activa,resuelta',
             'notas'             => 'nullable|string',
         ]);
+
+        $data = $this->uppercase($data, ['notas']);
 
         $patientPatologia->update($data);
 

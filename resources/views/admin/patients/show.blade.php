@@ -44,8 +44,7 @@
                     ['#citas',      'fa-calendar-check', 'Citas'],
                     ['#vacunas',    'fa-syringe',        'Vacunas'],
                     ['#patologias', 'fa-notes-medical',  'Patologías'],
-                    ['#embarazos',  'fa-person-pregnant','Embarazos'],
-                    ['#partos',     'fa-baby',           'Partos'],
+                    ['#perinatal',  'fa-baby',           'Antecedentes Perinatales'],
                 ] as [$id, $icon, $label])
                 <li class="me-2">
                     <button @click="tab = '{{ $id }}'"
@@ -80,6 +79,9 @@
                     'cancelled' => 'bg-red-100 text-red-700',
                 ];
             @endphp
+
+            {{-- Gráfica de peso --}}
+            @include('admin.partials.peso-chart', ['patient' => $patient, 'class' => 'mb-4'])
 
             @forelse ($patient->appointments as $appt)
             <div x-data="{ open: false }" class="mb-3">
@@ -323,94 +325,167 @@
             @endforelse
         </div>
 
-        {{-- Embarazos --}}
-        <div x-show="tab === '#embarazos'">
-            <div class="flex justify-end mb-3">
-                <x-wire-button blue href="{{ route('admin.patients.embarazos.create', $patient) }}">
-                    <i class="fa fa-plus"></i> Registrar Embarazo
-                </x-wire-button>
-            </div>
-            @forelse ($patient->embarazos as $embarazo)
-            <x-wire-card class="mb-3">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-1">
+        {{-- Antecedentes Perinatales --}}
+        <div x-show="tab === '#perinatal'">
+            @php
+                $embarazo = $patient->embarazos->first();
+                $parto    = $patient->partos->first();
+            @endphp
+
+            <div class="grid lg:grid-cols-2 gap-6">
+
+                {{-- Embarazo --}}
+                <x-wire-card>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-700">
+                            <i class="fa-solid fa-person-pregnant fa-fw text-pink-400"></i> Datos del Embarazo
+                        </h3>
+                        @if ($embarazo)
+                            <div class="flex gap-2">
+                                <x-wire-button href="{{ route('admin.embarazos.edit', $embarazo) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
+                                    <i class="fa fa-pen-to-square"></i>
+                                </x-wire-button>
+                                <form action="{{ route('admin.embarazos.destroy', $embarazo) }}" method="POST" class="delete-form">
+                                    @csrf @method('DELETE')
+                                    <x-wire-button type="submit" xs class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
+                                        <i class="fa fa-trash"></i>
+                                    </x-wire-button>
+                                </form>
+                            </div>
+                        @else
+                            <x-wire-button blue xs href="{{ route('admin.patients.embarazos.create', $patient) }}">
+                                <i class="fa fa-plus"></i> Registrar
+                            </x-wire-button>
+                        @endif
+                    </div>
+
+                    @if ($embarazo)
+                        <dl class="space-y-2 text-sm">
                             @if ($embarazo->numero_embarazo)
-                                <span class="font-semibold text-gray-800">Embarazo #{{ $embarazo->numero_embarazo }}</span>
-                            @else
-                                <span class="font-semibold text-gray-800">Embarazo</span>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-40">No. de Gestación</dt><dd class="text-gray-900">{{ $embarazo->numero_embarazo }}</dd></div>
+                            @endif
+                            @if ($embarazo->obstetra)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-40">Obstetra</dt><dd class="text-gray-900">{{ $embarazo->obstetra }}</dd></div>
                             @endif
                             @if ($embarazo->semanas_gestacion)
-                                <span class="text-sm text-gray-600">{{ $embarazo->semanas_gestacion }} semanas</span>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-40">Duración</dt><dd class="text-gray-900">{{ $embarazo->semanas_gestacion }} semanas</dd></div>
                             @endif
-                        </div>
-                        <div class="flex flex-wrap gap-3 text-sm text-gray-600">
-                            @if ($embarazo->fecha_ultima_menstruacion) <span>FUM: {{ $embarazo->fecha_ultima_menstruacion->format('d/m/Y') }}</span> @endif
-                            @if ($embarazo->fecha_probable_parto) <span>FPP: {{ $embarazo->fecha_probable_parto->format('d/m/Y') }}</span> @endif
-                        </div>
-                        @if ($embarazo->notas) <p class="text-sm text-gray-500 mt-1">{{ $embarazo->notas }}</p> @endif
-                    </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                        <x-wire-button href="{{ route('admin.embarazos.edit', $embarazo) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
-                            <i class="fa fa-pen-to-square"></i>
-                        </x-wire-button>
-                        <form action="{{ route('admin.embarazos.destroy', $embarazo) }}" method="POST" class="delete-form">
-                            @csrf @method('DELETE')
-                            <x-wire-button type="submit" xs class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
-                                <i class="fa fa-trash"></i>
-                            </x-wire-button>
-                        </form>
-                    </div>
-                </div>
-            </x-wire-card>
-            @empty
-            <p class="text-gray-500 text-sm text-center py-8">No hay embarazos registrados.</p>
-            @endforelse
-        </div>
+                            @php
+                                $complicaciones = array_filter([
+                                    $embarazo->diabetes     ? 'Diabetes'      : null,
+                                    $embarazo->hipertension ? 'Hipertensión'  : null,
+                                    $embarazo->traumatismo  ? 'Traumatismo'   : null,
+                                ]);
+                            @endphp
+                            <div class="flex gap-2">
+                                <dt class="text-gray-500 w-40">Complicaciones</dt>
+                                <dd class="text-gray-900">{{ $complicaciones ? implode(', ', $complicaciones) : 'Ninguna' }}</dd>
+                            </div>
+                            <div class="flex gap-2"><dt class="text-gray-500 w-40">Infecciones</dt><dd class="text-gray-900">{{ $embarazo->infecciones ? 'Sí' : 'No' }}</dd></div>
+                            <div class="flex gap-2"><dt class="text-gray-500 w-40">Asma</dt><dd class="text-gray-900">{{ $embarazo->asma ? 'Sí' : 'No' }}</dd></div>
+                            @if ($embarazo->medicacion)
+                                <div><dt class="text-gray-500 mb-1">Medicación</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $embarazo->medicacion }}</dd></div>
+                            @endif
+                            @if ($embarazo->observaciones)
+                                <div><dt class="text-gray-500 mb-1">Observaciones</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $embarazo->observaciones }}</dd></div>
+                            @endif
+                        </dl>
+                    @else
+                        <p class="text-sm text-gray-400 text-center py-4">Sin datos registrados.</p>
+                    @endif
+                </x-wire-card>
 
-        {{-- Partos --}}
-        <div x-show="tab === '#partos'">
-            <div class="flex justify-end mb-3">
-                <x-wire-button blue href="{{ route('admin.patients.partos.create', $patient) }}">
-                    <i class="fa fa-plus"></i> Registrar Parto
-                </x-wire-button>
-            </div>
-            @forelse ($patient->partos as $parto)
-            <x-wire-card class="mb-3">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="font-semibold text-gray-800">{{ $parto->fecha_parto?->format('d/m/Y') }}</span>
-                            <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{{ ucfirst($parto->tipo_parto) }}</span>
-                            @if ($parto->semanas_gestacion)
-                                <span class="text-sm text-gray-600">{{ $parto->semanas_gestacion }} semanas</span>
-                            @endif
-                        </div>
-                        <div class="flex flex-wrap gap-3 text-sm text-gray-600">
-                            @if ($parto->peso_rn) <span>Peso RN: {{ $parto->peso_rn }} kg</span> @endif
-                            @if ($parto->talla_rn) <span>Talla RN: {{ $parto->talla_rn }} cm</span> @endif
-                            @if ($parto->apgar_1 !== null) <span>Apgar 1': {{ $parto->apgar_1 }}</span> @endif
-                            @if ($parto->apgar_5 !== null) <span>Apgar 5': {{ $parto->apgar_5 }}</span> @endif
-                        </div>
-                        @if ($parto->complicaciones) <p class="text-sm text-gray-500 mt-1"><span class="font-medium">Complicaciones:</span> {{ $parto->complicaciones }}</p> @endif
-                        @if ($parto->notas) <p class="text-sm text-gray-500">{{ $parto->notas }}</p> @endif
-                    </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                        <x-wire-button href="{{ route('admin.partos.edit', $parto) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
-                            <i class="fa fa-pen-to-square"></i>
-                        </x-wire-button>
-                        <form action="{{ route('admin.partos.destroy', $parto) }}" method="POST" class="delete-form">
-                            @csrf @method('DELETE')
-                            <x-wire-button type="submit" xs class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
-                                <i class="fa fa-trash"></i>
+                {{-- Parto --}}
+                <x-wire-card>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-700">
+                            <i class="fa-solid fa-baby fa-fw text-blue-400"></i> Datos del Parto / Nacimiento
+                        </h3>
+                        @if ($parto)
+                            <div class="flex gap-2">
+                                <x-wire-button href="{{ route('admin.partos.edit', $parto) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
+                                    <i class="fa fa-pen-to-square"></i>
+                                </x-wire-button>
+                                <form action="{{ route('admin.partos.destroy', $parto) }}" method="POST" class="delete-form">
+                                    @csrf @method('DELETE')
+                                    <x-wire-button type="submit" xs class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
+                                        <i class="fa fa-trash"></i>
+                                    </x-wire-button>
+                                </form>
+                            </div>
+                        @else
+                            <x-wire-button blue xs href="{{ route('admin.patients.partos.create', $patient) }}">
+                                <i class="fa fa-plus"></i> Registrar
                             </x-wire-button>
-                        </form>
+                        @endif
                     </div>
-                </div>
-            </x-wire-card>
-            @empty
-            <p class="text-gray-500 text-sm text-center py-8">No hay partos registrados.</p>
-            @endforelse
+
+                    @if ($parto)
+                        @php
+                            $posiciones  = ['cefalica' => 'Cefálica', 'podalica' => 'Podálica'];
+                            $partoTipos  = ['eutocico' => 'Eutócico', 'distocico' => 'Distócico'];
+                            $anestesias  = ['no' => 'No', 'raquidea' => 'Raquídea', 'peridural' => 'Peridural', 'total' => 'Total'];
+                        @endphp
+
+                        {{-- Datos del parto --}}
+                        <dl class="space-y-2 text-sm mb-4">
+                            @if ($parto->fecha_parto)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Fecha</dt><dd class="text-gray-900">{{ $parto->fecha_parto->format('d/m/Y') }}</dd></div>
+                            @endif
+                            @if ($parto->lugar)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Lugar</dt><dd class="text-gray-900">{{ $parto->lugar }}</dd></div>
+                            @endif
+                            <div class="flex gap-2"><dt class="text-gray-500 w-36">Cesárea</dt><dd class="text-gray-900">{{ $parto->cesarea ? 'Sí' : 'No' }}</dd></div>
+                            @if ($parto->cesarea && $parto->motivo_cesarea)
+                                <div><dt class="text-gray-500 mb-1">Motivo cesárea</dt><dd class="text-gray-700">{{ $parto->motivo_cesarea }}</dd></div>
+                            @endif
+                            @if ($parto->posicion)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Posición</dt><dd class="text-gray-900">{{ $posiciones[$parto->posicion] ?? $parto->posicion }}</dd></div>
+                            @endif
+                            @if ($parto->parto_tipo)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Parto</dt><dd class="text-gray-900">{{ $partoTipos[$parto->parto_tipo] ?? $parto->parto_tipo }}</dd></div>
+                            @endif
+                            @if ($parto->anestesia)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Anestesia</dt><dd class="text-gray-900">{{ $anestesias[$parto->anestesia] ?? $parto->anestesia }}</dd></div>
+                            @endif
+                            @if ($parto->apgar)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Apgar</dt><dd class="text-gray-900">{{ $parto->apgar }}</dd></div>
+                            @endif
+                            @if ($parto->parto_gamma)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Parto Gamma</dt><dd class="text-gray-900">{{ $parto->parto_gamma }}</dd></div>
+                            @endif
+                            @if ($parto->observaciones)
+                                <div><dt class="text-gray-500 mb-1">Observaciones</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $parto->observaciones }}</dd></div>
+                            @endif
+                        </dl>
+
+                        {{-- Datos del RN --}}
+                        @if ($parto->peso_rn || $parto->talla_rn || $parto->pc_rn || $parto->ombligo_dias || $parto->observaciones_rn)
+                        <p class="text-xs font-semibold text-gray-500 uppercase mb-2 border-t pt-3">Recién Nacido</p>
+                        <dl class="space-y-2 text-sm">
+                            @if ($parto->peso_rn)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Peso</dt><dd class="text-gray-900">{{ $parto->peso_rn }}</dd></div>
+                            @endif
+                            @if ($parto->talla_rn)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Altura</dt><dd class="text-gray-900">{{ $parto->talla_rn }}</dd></div>
+                            @endif
+                            @if ($parto->pc_rn)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">P.C.</dt><dd class="text-gray-900">{{ $parto->pc_rn }}</dd></div>
+                            @endif
+                            @if ($parto->ombligo_dias)
+                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Ombligo</dt><dd class="text-gray-900">{{ $parto->ombligo_dias }}</dd></div>
+                            @endif
+                            @if ($parto->observaciones_rn)
+                                <div><dt class="text-gray-500 mb-1">Observaciones RN</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $parto->observaciones_rn }}</dd></div>
+                            @endif
+                        </dl>
+                        @endif
+                    @else
+                        <p class="text-sm text-gray-400 text-center py-4">Sin datos registrados.</p>
+                    @endif
+                </x-wire-card>
+
+            </div>
         </div>
 
     </div>

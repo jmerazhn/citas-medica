@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Expediente;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\Embarazo;
 use App\Models\Parto;
@@ -11,25 +12,39 @@ use Illuminate\Support\Facades\Session;
 
 class PartoController extends Controller
 {
+    use UppercasesTextFields;
+
     public function create(Patient $patient)
     {
-        $embarazos = $patient->embarazos()->get();
-        return view('admin.expediente.partos.create', compact('patient', 'embarazos'));
+        abort_if($patient->partos()->exists(), 404);
+        return view('admin.expediente.partos.create', compact('patient'));
     }
 
     public function store(Request $request, Patient $patient)
     {
+        abort_if($patient->partos()->exists(), 404);
         $data = $request->validate([
-            'embarazo_id'      => 'nullable|exists:embarazos,id',
-            'fecha_parto'      => 'required|date',
-            'tipo_parto'       => 'required|in:vaginal,cesarea',
-            'semanas_gestacion' => 'nullable|integer|min:20|max:45',
-            'peso_rn'          => 'nullable|numeric|min:0|max:10',
-            'talla_rn'         => 'nullable|numeric|min:0|max:70',
-            'apgar_1'          => 'nullable|integer|min:0|max:10',
-            'apgar_5'          => 'nullable|integer|min:0|max:10',
-            'complicaciones'   => 'nullable|string',
-            'notas'            => 'nullable|string',
+            'fecha_parto'     => 'required|date',
+            'lugar'           => 'nullable|string|max:200',
+            'cesarea'         => 'nullable|boolean',
+            'motivo_cesarea'  => 'nullable|string',
+            'posicion'        => 'nullable|in:cefalica,podalica',
+            'parto_tipo'      => 'nullable|in:eutocico,distocico',
+            'apgar'           => 'nullable|string',
+            'parto_gamma'     => 'nullable|string',
+            'anestesia'       => 'nullable|in:no,raquidea,peridural,total',
+            'observaciones'   => 'nullable|string',
+            'peso_rn'         => 'nullable|numeric|min:0',
+            'talla_rn'        => 'nullable|numeric|min:0',
+            'pc_rn'           => 'nullable|numeric|min:0',
+            'ombligo_dias'    => 'nullable|integer|min:0',
+            'observaciones_rn'=> 'nullable|string',
+        ]);
+
+        $data['cesarea'] = $request->boolean('cesarea');
+
+        $data = $this->uppercase($data, [
+            'lugar', 'motivo_cesarea', 'apgar', 'parto_gamma', 'observaciones', 'observaciones_rn',
         ]);
 
         $patient->partos()->create($data);
@@ -48,16 +63,27 @@ class PartoController extends Controller
     public function update(Request $request, Parto $parto)
     {
         $data = $request->validate([
-            'embarazo_id'      => 'nullable|exists:embarazos,id',
-            'fecha_parto'      => 'required|date',
-            'tipo_parto'       => 'required|in:vaginal,cesarea',
-            'semanas_gestacion' => 'nullable|integer|min:20|max:45',
-            'peso_rn'          => 'nullable|numeric|min:0|max:10',
-            'talla_rn'         => 'nullable|numeric|min:0|max:70',
-            'apgar_1'          => 'nullable|integer|min:0|max:10',
-            'apgar_5'          => 'nullable|integer|min:0|max:10',
-            'complicaciones'   => 'nullable|string',
-            'notas'            => 'nullable|string',
+            'fecha_parto'     => 'required|date',
+            'lugar'           => 'nullable|string|max:200',
+            'cesarea'         => 'nullable|boolean',
+            'motivo_cesarea'  => 'nullable|string',
+            'posicion'        => 'nullable|in:cefalica,podalica',
+            'parto_tipo'      => 'nullable|in:eutocico,distocico',
+            'apgar'           => 'nullable|string',
+            'parto_gamma'     => 'nullable|string',
+            'anestesia'       => 'nullable|in:no,raquidea,peridural,total',
+            'observaciones'   => 'nullable|string',
+            'peso_rn'         => 'nullable|numeric|min:0',
+            'talla_rn'        => 'nullable|numeric|min:0',
+            'pc_rn'           => 'nullable|numeric|min:0',
+            'ombligo_dias'    => 'nullable|integer|min:0',
+            'observaciones_rn'=> 'nullable|string',
+        ]);
+
+        $data['cesarea'] = $request->boolean('cesarea');
+
+        $data = $this->uppercase($data, [
+            'lugar', 'motivo_cesarea', 'apgar', 'parto_gamma', 'observaciones', 'observaciones_rn',
         ]);
 
         $parto->update($data);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Catalogos;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\MotivoConsulta;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 
 class MotivoConsultaController extends Controller
 {
+    use UppercasesTextFields;
+
     public function index()
     {
         return view('admin.catalogos.motivos-consulta.index');
@@ -22,6 +25,7 @@ class MotivoConsultaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(['nombre' => 'required|string|max:255|unique:motivos_consulta,nombre']);
+        $data = $this->uppercase($data, ['nombre']);
         MotivoConsulta::create($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Guardado', 'text' => 'Motivo de consulta creado.']);
         return redirect()->route('admin.catalogos.motivos-consulta.index');
@@ -37,6 +41,7 @@ class MotivoConsultaController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255|unique:motivos_consulta,nombre,' . $motivoConsulta->id,
         ]);
+        $data = $this->uppercase($data, ['nombre']);
         $motivoConsulta->update($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Actualizado', 'text' => 'Motivo de consulta actualizado.']);
         return redirect()->route('admin.catalogos.motivos-consulta.index');

@@ -159,6 +159,9 @@
                 </x-wire-card>
             </div>
 
+            {{-- Gráfica de peso --}}
+            @include('admin.partials.peso-chart', ['patient' => $appointment->patient])
+
             {{-- Clínico --}}
             <div class="grid lg:grid-cols-2 gap-4">
                 <x-wire-card>

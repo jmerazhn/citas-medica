@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Session;
 
 class AppointmentController extends Controller
 {
+    use UppercasesTextFields;
+
     public function index()
     {
         return view('admin.appointments.index');
@@ -47,6 +50,8 @@ class AppointmentController extends Controller
             ->first();
 
         $duration = $schedule?->slot_duration ?? config('appointment.duration', 30);
+
+        $data = $this->uppercase($data, ['notes']);
 
         Appointment::create([
             'patient_id'         => $data['patient_id'],
@@ -103,6 +108,8 @@ class AppointmentController extends Controller
             ->first();
 
         $duration = $schedule?->slot_duration ?? $appointment->duration;
+
+        $data = $this->uppercase($data, ['notes']);
 
         $appointment->update([
             'patient_id'         => $data['patient_id'],
@@ -167,6 +174,8 @@ class AppointmentController extends Controller
         $data = $request->validate([
             'cancelled_reason' => 'required|string|max:255',
         ]);
+
+        $data = $this->uppercase($data, ['cancelled_reason']);
 
         $appointment->update([
             'status'           => 'cancelled',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Catalogos;
 
+use App\Http\Controllers\Concerns\UppercasesTextFields;
 use App\Http\Controllers\Controller;
 use App\Models\SocialCoverage;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 
 class SocialCoverageController extends Controller
 {
+    use UppercasesTextFields;
+
     public function index()
     {
         return view('admin.catalogos.coberturas-sociales.index');
@@ -22,6 +25,7 @@ class SocialCoverageController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(['name' => 'required|string|max:255|unique:social_coverages,name']);
+        $data = $this->uppercase($data, ['name']);
         SocialCoverage::create($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Guardado', 'text' => 'Cobertura social creada.']);
         return redirect()->route('admin.catalogos.coberturas-sociales.index');
@@ -37,6 +41,7 @@ class SocialCoverageController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255|unique:social_coverages,name,' . $socialCoverage->id,
         ]);
+        $data = $this->uppercase($data, ['name']);
         $socialCoverage->update($data);
         Session::flash('swal', ['icon' => 'success', 'title' => 'Actualizado', 'text' => 'Cobertura social actualizada.']);
         return redirect()->route('admin.catalogos.coberturas-sociales.index');

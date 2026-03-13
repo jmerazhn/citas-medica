@@ -10,7 +10,7 @@
 
         <x-wire-card class="mb-6">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-gray-800">Editar Parto — {{ $patient->full_name }}</h2>
+                <h2 class="text-xl font-bold text-gray-800">Datos del Parto — {{ $patient->full_name }}</h2>
                 <div class="flex space-x-3">
                     <x-wire-button outline gray href="{{ route('admin.patients.show', $patient) }}">Volver</x-wire-button>
                     <x-wire-button type="submit" primary><i class="fa-solid fa-check"></i> Actualizar</x-wire-button>
@@ -18,45 +18,101 @@
             </div>
         </x-wire-card>
 
-        <x-wire-card>
-            <div class="grid lg:grid-cols-2 gap-4">
+        <div class="grid lg:grid-cols-2 gap-6"
+             x-data="{ cesarea: {{ old('cesarea', $parto->cesarea) ? 'true' : 'false' }} }">
 
-                @if ($embarazos->isNotEmpty())
-                <x-wire-native-select label="Embarazo relacionado (opcional)" name="embarazo_id">
-                    <option value="">Sin embarazo vinculado</option>
-                    @foreach ($embarazos as $embarazo)
-                        <option value="{{ $embarazo->id }}" @selected(old('embarazo_id', $parto->embarazo_id) == $embarazo->id)>
-                            Embarazo #{{ $embarazo->numero_embarazo ?? $embarazo->id }}
-                            @if($embarazo->fecha_probable_parto) — FPP: {{ $embarazo->fecha_probable_parto->format('d/m/Y') }} @endif
-                        </option>
-                    @endforeach
-                </x-wire-native-select>
-                @endif
+            {{-- Datos del Parto --}}
+            <x-wire-card>
+                <h3 class="font-semibold text-gray-700 mb-4">Datos del Parto</h3>
+                <div class="space-y-4">
 
-                <x-wire-input label="Fecha de Parto" name="fecha_parto" type="date" value="{{ old('fecha_parto', $parto->fecha_parto?->format('Y-m-d')) }}" required />
+                    <x-wire-input label="Fecha de Parto" name="fecha_parto" type="date"
+                        value="{{ old('fecha_parto', $parto->fecha_parto?->format('Y-m-d')) }}" required />
 
-                <x-wire-native-select label="Tipo de Parto" name="tipo_parto" required>
-                    <option value="vaginal" @selected(old('tipo_parto', $parto->tipo_parto) === 'vaginal')>Vaginal</option>
-                    <option value="cesarea" @selected(old('tipo_parto', $parto->tipo_parto) === 'cesarea')>Cesárea</option>
-                </x-wire-native-select>
+                    <x-wire-input label="Lugar" name="lugar"
+                        value="{{ old('lugar', $parto->lugar) }}" placeholder="Hospital, clínica, domicilio..." />
 
-                <x-wire-input label="Semanas de Gestación" name="semanas_gestacion" type="number" min="20" max="45" value="{{ old('semanas_gestacion', $parto->semanas_gestacion) }}" />
+                    {{-- Cesárea --}}
+                    <div>
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="cesarea" value="1"
+                                x-model="cesarea"
+                                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm font-medium text-gray-700">Cesárea</span>
+                        </label>
+                    </div>
 
-            </div>
+                    <div x-show="cesarea" x-transition>
+                        <x-wire-textarea label="Motivo de Cesárea" name="motivo_cesarea" rows="2">{{ old('motivo_cesarea', $parto->motivo_cesarea) }}</x-wire-textarea>
+                    </div>
 
-            <h3 class="text-base font-semibold text-gray-700 mt-6 mb-3">Datos del Recién Nacido</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <x-wire-input label="Peso RN (kg)" name="peso_rn" type="number" step="0.001" value="{{ old('peso_rn', $parto->peso_rn) }}" />
-                <x-wire-input label="Talla RN (cm)" name="talla_rn" type="number" step="0.1" value="{{ old('talla_rn', $parto->talla_rn) }}" />
-                <x-wire-input label="Apgar 1 min" name="apgar_1" type="number" min="0" max="10" value="{{ old('apgar_1', $parto->apgar_1) }}" />
-                <x-wire-input label="Apgar 5 min" name="apgar_5" type="number" min="0" max="10" value="{{ old('apgar_5', $parto->apgar_5) }}" />
-            </div>
+                    {{-- Posición --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Posición</label>
+                        <div class="flex gap-6">
+                            @foreach (['cefalica' => 'Cefálica', 'podalica' => 'Podálica'] as $val => $lbl)
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="posicion" value="{{ $val }}"
+                                        {{ old('posicion', $parto->posicion) === $val ? 'checked' : '' }}
+                                        class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $lbl }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
 
-            <div class="grid lg:grid-cols-2 gap-4 mt-4">
-                <x-wire-textarea label="Complicaciones" name="complicaciones">{{ old('complicaciones', $parto->complicaciones) }}</x-wire-textarea>
-                <x-wire-textarea label="Notas" name="notas">{{ old('notas', $parto->notas) }}</x-wire-textarea>
-            </div>
-        </x-wire-card>
+                    {{-- Tipo de Parto --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Parto</label>
+                        <div class="flex gap-6">
+                            @foreach (['eutocico' => 'Eutócico', 'distocico' => 'Distócico'] as $val => $lbl)
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="parto_tipo" value="{{ $val }}"
+                                        {{ old('parto_tipo', $parto->parto_tipo) === $val ? 'checked' : '' }}
+                                        class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $lbl }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Anestesia --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Anestesia</label>
+                        <div class="flex flex-wrap gap-4">
+                            @foreach (['no' => 'No', 'raquidea' => 'Raquídea', 'peridural' => 'Peridural', 'total' => 'Total'] as $val => $lbl)
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="anestesia" value="{{ $val }}"
+                                        {{ old('anestesia', $parto->anestesia ?? 'no') === $val ? 'checked' : '' }}
+                                        class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $lbl }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <x-wire-input label="Apgar" name="apgar" value="{{ old('apgar', $parto->apgar) }}" placeholder="ej. 8/9" />
+                    <x-wire-input label="Parto Gamma" name="parto_gamma" value="{{ old('parto_gamma', $parto->parto_gamma) }}" />
+                    <x-wire-textarea label="Observaciones" name="observaciones" rows="3">{{ old('observaciones', $parto->observaciones) }}</x-wire-textarea>
+
+                </div>
+            </x-wire-card>
+
+            {{-- Datos del Recién Nacido --}}
+            <x-wire-card>
+                <h3 class="font-semibold text-gray-700 mb-4">Datos del Recién Nacido</h3>
+                <div class="space-y-4">
+
+                    <x-wire-input label="Peso (kg)" name="peso_rn" type="number" step="0.001" min="0" value="{{ old('peso_rn', $parto->peso_rn) }}" placeholder="ej. 3.200" />
+                    <x-wire-input label="Altura (cm)" name="talla_rn" type="number" step="0.1" min="0" value="{{ old('talla_rn', $parto->talla_rn) }}" placeholder="ej. 50" />
+                    <x-wire-input label="P.C. (cm)" name="pc_rn" type="number" step="0.1" min="0" value="{{ old('pc_rn', $parto->pc_rn) }}" placeholder="ej. 34" />
+                    <x-wire-input label="Ombligo (días)" name="ombligo_dias" type="number" step="1" min="0" value="{{ old('ombligo_dias', $parto->ombligo_dias) }}" placeholder="ej. 7" />
+                    <x-wire-textarea label="Observaciones RN" name="observaciones_rn" rows="4">{{ old('observaciones_rn', $parto->observaciones_rn) }}</x-wire-textarea>
+
+                </div>
+            </x-wire-card>
+
+        </div>
 
     </form>
 </x-admin-layout>
