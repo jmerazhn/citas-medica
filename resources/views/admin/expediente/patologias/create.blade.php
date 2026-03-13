@@ -20,12 +20,15 @@
         <x-wire-card>
             <div class="grid lg:grid-cols-2 gap-4">
 
-                <x-wire-native-select label="Patología" name="patologia_id" required>
-                    <option value="">Seleccionar...</option>
-                    @foreach ($patologias as $patologia)
-                        <option value="{{ $patologia->id }}" @selected(old('patologia_id') == $patologia->id)>{{ $patologia->nombre }}</option>
-                    @endforeach
-                </x-wire-native-select>
+                <x-searchable-select
+                    name="patologia_id"
+                    label="Patología"
+                    :options="$patologias"
+                    option-value="id"
+                    option-label="nombre"
+                    placeholder="Seleccionar..."
+                    :selected="old('patologia_id')"
+                />
 
                 <x-wire-input label="Fecha de Diagnóstico" name="fecha_diagnostico" type="date" value="{{ old('fecha_diagnostico') }}" />
 

@@ -57,11 +57,12 @@ class PatientController extends Controller
         $patient->load([
             'bloodType',
             'socialCoverage',
-            'consultas.motivoConsulta',
             'vacunas.planVacunacion',
             'patologias.patologia',
             'embarazos',
             'partos.embarazo',
+            'appointments' => fn($q) => $q->with(['doctor', 'motivoConsulta', 'atencion.estudiosOrdenados'])
+                                          ->orderBy('scheduled_at', 'desc'),
         ]);
 
         return view('admin.patients.show', compact('patient'));

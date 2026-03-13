@@ -37,15 +37,14 @@
             <div class="space-y-6">
                 {{-- Paciente --}}
                 <div>
-                    <x-wire-select
+                    <x-searchable-select
                         name="patient_id"
                         label="Paciente"
                         :options="$patients"
                         option-value="id"
                         option-label="full_name"
                         placeholder="Seleccione un paciente"
-                        :value="old('patient_id', $appointment->patient_id)"
-                        searchable
+                        :selected="old('patient_id', $appointment->patient_id)"
                     />
                     @error('patient_id')
                         <p class="text-red-600 text-xs mt-1">{{ $message }}</p>

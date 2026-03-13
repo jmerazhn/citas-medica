@@ -1,14 +1,14 @@
 <div class="grid lg:grid-cols-2 gap-4">
     <div>
-        <x-wire-select
-            wire:model.live="doctorId"
+        <x-searchable-select
             name="doctor_id"
             label="Doctor"
             :options="$doctors"
             option-value="id"
             option-label="name"
             placeholder="Seleccione un doctor"
-            searchable
+            :selected="$doctorId"
+            wire-model="doctorId"
         />
         @error('doctor_id')
             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>

@@ -45,11 +45,6 @@ class Patient extends Model
         return $this->hasMany(Appointment::class);
     }
 
-    public function consultas()
-    {
-        return $this->hasMany(Consulta::class)->orderByDesc('fecha');
-    }
-
     public function vacunas()
     {
         return $this->hasMany(Vacuna::class)->orderByDesc('fecha_aplicacion');

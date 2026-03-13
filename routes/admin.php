@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\Catalogos\PatologiaCatalogoController;
 use App\Http\Controllers\Admin\Catalogos\TablaCrecimientoController;
 use App\Http\Controllers\Admin\Catalogos\SocialCoverageController;
 use App\Http\Controllers\Admin\Expediente\AtencionController;
-use App\Http\Controllers\Admin\Expediente\ConsultaController;
 use App\Http\Controllers\Admin\Expediente\VacunaController;
 use App\Http\Controllers\Admin\Expediente\PatologiaPacienteController;
 use App\Http\Controllers\Admin\Expediente\EmbarazoController;
@@ -29,8 +28,6 @@ Route::resource('users', UserController::class);
 Route::resource('patients', PatientController::class);
 
 // Expediente del paciente (nested, shallow)
-Route::resource('patients.consultas', ConsultaController::class)
-    ->shallow()->except(['index', 'show']);
 Route::resource('patients.vacunas', VacunaController::class)
     ->shallow()->except(['index', 'show']);
 Route::resource('patients.patologias', PatologiaPacienteController::class)

@@ -36,12 +36,12 @@
     </x-wire-card>
 
     {{-- Tabs --}}
-    <div x-data="{ tab: window.location.hash || '#consultas' }" x-init="$watch('tab', v => window.location.hash = v)">
+    <div x-data="{ tab: window.location.hash || '#citas' }" x-init="$watch('tab', v => window.location.hash = v)">
 
         <div class="border-b border-gray-200 mb-4">
             <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500">
                 @foreach([
-                    ['#consultas',  'fa-stethoscope',    'Consultas'],
+                    ['#citas',      'fa-calendar-check', 'Citas'],
                     ['#vacunas',    'fa-syringe',        'Vacunas'],
                     ['#patologias', 'fa-notes-medical',  'Patologías'],
                     ['#embarazos',  'fa-person-pregnant','Embarazos'],
@@ -58,56 +58,186 @@
             </ul>
         </div>
 
-        {{-- Consultas --}}
-        <div x-show="tab === '#consultas'">
-            <div class="flex justify-end mb-3">
-                <x-wire-button blue href="{{ route('admin.patients.consultas.create', $patient) }}">
-                    <i class="fa fa-plus"></i> Nueva Consulta
-                </x-wire-button>
-            </div>
-            @forelse ($patient->consultas as $consulta)
-            <x-wire-card class="mb-3">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="font-semibold text-gray-800">{{ $consulta->fecha?->format('d/m/Y') }}</span>
-                            @if ($consulta->motivoConsulta)
-                                <span class="text-sm text-gray-600">— {{ $consulta->motivoConsulta->nombre }}</span>
-                            @endif
-                            @if ($consulta->motivo_detalle)
-                                <span class="text-sm text-gray-500">{{ $consulta->motivo_detalle }}</span>
+        {{-- Citas --}}
+        <div x-show="tab === '#citas'">
+            @php
+                $statusColors = [
+                    'pending'   => 'border-l-yellow-400 bg-yellow-50',
+                    'confirmed' => 'border-l-blue-400 bg-blue-50',
+                    'completed' => 'border-l-green-400 bg-green-50',
+                    'cancelled' => 'border-l-red-300 bg-red-50',
+                ];
+                $statusLabels = [
+                    'pending'   => 'Pendiente',
+                    'confirmed' => 'Confirmada',
+                    'completed' => 'Completada',
+                    'cancelled' => 'Cancelada',
+                ];
+                $statusBadge = [
+                    'pending'   => 'bg-yellow-100 text-yellow-800',
+                    'confirmed' => 'bg-blue-100 text-blue-800',
+                    'completed' => 'bg-green-100 text-green-800',
+                    'cancelled' => 'bg-red-100 text-red-700',
+                ];
+            @endphp
+
+            @forelse ($patient->appointments as $appt)
+            <div x-data="{ open: false }" class="mb-3">
+                {{-- Cabecera de la cita --}}
+                <div
+                    @click="open = !open"
+                    class="border-l-4 rounded-r-lg p-4 cursor-pointer select-none hover:brightness-95 transition
+                        {{ $statusColors[$appt->status] ?? 'border-l-gray-300 bg-gray-50' }}">
+
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="font-semibold text-gray-800">
+                                {{ $appt->scheduled_at->format('d/m/Y H:i') }}
+                            </span>
+                            <span class="text-sm text-gray-600">
+                                <i class="fa-solid fa-user-doctor fa-fw"></i> {{ $appt->doctor->name }}
+                            </span>
+                            @if ($appt->motivoConsulta)
+                                <span class="text-sm text-gray-600">
+                                    <i class="fa-solid fa-stethoscope fa-fw"></i> {{ $appt->motivoConsulta->nombre }}
+                                </span>
                             @endif
                         </div>
-                        <div class="flex flex-wrap gap-3 text-sm text-gray-600 mb-2">
-                            @if ($consulta->peso) <span><i class="fa-solid fa-weight-scale fa-fw"></i> {{ $consulta->peso }} kg</span> @endif
-                            @if ($consulta->talla) <span><i class="fa-solid fa-ruler-vertical fa-fw"></i> {{ $consulta->talla }} cm</span> @endif
-                            @if ($consulta->temperatura) <span><i class="fa-solid fa-temperature-half fa-fw"></i> {{ $consulta->temperatura }} °C</span> @endif
-                            @if ($consulta->fc) <span>FC: {{ $consulta->fc }} lpm</span> @endif
-                            @if ($consulta->fr) <span>FR: {{ $consulta->fr }} rpm</span> @endif
-                            @if ($consulta->spo2) <span>SpO2: {{ $consulta->spo2 }}%</span> @endif
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                                {{ $statusBadge[$appt->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ $statusLabels[$appt->status] ?? $appt->status }}
+                            </span>
+                            @if ($appt->atencion)
+                                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">
+                                    <i class="fa-solid fa-notes-medical fa-fw"></i> Con atención
+                                </span>
+                            @endif
+                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform duration-200"
+                               :class="{ 'rotate-180': open }"></i>
                         </div>
-                        @if ($consulta->diagnostico)
-                            <p class="text-sm"><span class="font-medium">Diagnóstico:</span> {{ $consulta->diagnostico }}</p>
-                        @endif
-                        @if ($consulta->tratamiento)
-                            <p class="text-sm"><span class="font-medium">Tratamiento:</span> {{ $consulta->tratamiento }}</p>
-                        @endif
-                    </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                        <x-wire-button href="{{ route('admin.consultas.edit', $consulta) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
-                            <i class="fa fa-pen-to-square"></i>
-                        </x-wire-button>
-                        <form action="{{ route('admin.consultas.destroy', $consulta) }}" method="POST" class="delete-form">
-                            @csrf @method('DELETE')
-                            <x-wire-button type="submit" xs class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
-                                <i class="fa fa-trash"></i>
-                            </x-wire-button>
-                        </form>
                     </div>
                 </div>
-            </x-wire-card>
+
+                {{-- Detalle expandible --}}
+                <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="border border-t-0 border-gray-200 rounded-b-lg bg-white p-4 space-y-4"
+                     style="display:none">
+
+                    @if ($appt->atencion)
+                        @php $a = $appt->atencion; @endphp
+
+                        {{-- Crecimiento y Signos Vitales --}}
+                        @if ($a->peso || $a->altura || $a->pc || $a->imc || $a->temperatura || $a->fc || $a->fr || $a->presion_arterial)
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            @if ($a->peso || $a->altura || $a->pc || $a->imc)
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Crecimiento</p>
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                                    @if ($a->peso)    <div><dt class="text-gray-500">Peso</dt>    <dd>{{ $a->peso }}</dd></div> @endif
+                                    @if ($a->altura)  <div><dt class="text-gray-500">Talla</dt>   <dd>{{ $a->altura }}</dd></div> @endif
+                                    @if ($a->pc)      <div><dt class="text-gray-500">P.C.</dt>    <dd>{{ $a->pc }}</dd></div> @endif
+                                    @if ($a->imc)     <div><dt class="text-gray-500">I.M.C.</dt>  <dd>{{ $a->imc }}</dd></div> @endif
+                                </dl>
+                            </div>
+                            @endif
+                            @if ($a->temperatura || $a->fc || $a->fr || $a->presion_arterial)
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Signos Vitales</p>
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                                    @if ($a->temperatura)     <div><dt class="text-gray-500">Temp.</dt> <dd>{{ $a->temperatura }}</dd></div> @endif
+                                    @if ($a->fc)              <div><dt class="text-gray-500">F.C.</dt>  <dd>{{ $a->fc }}</dd></div> @endif
+                                    @if ($a->fr)              <div><dt class="text-gray-500">F.R.</dt>  <dd>{{ $a->fr }}</dd></div> @endif
+                                    @if ($a->presion_arterial)<div><dt class="text-gray-500">P.A.</dt>  <dd>{{ $a->presion_arterial }}</dd></div> @endif
+                                </dl>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+
+                        {{-- Clínico --}}
+                        @if ($a->sintomatologia)
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Sintomatología</p>
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->sintomatologia }}</p>
+                        </div>
+                        @endif
+
+                        @if ($a->diagnostico_posible || $a->diagnostico_confirmado)
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            @if ($a->diagnostico_posible)
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Diagnóstico Posible</p>
+                                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->diagnostico_posible }}</p>
+                            </div>
+                            @endif
+                            @if ($a->diagnostico_confirmado)
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Diagnóstico Confirmado</p>
+                                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->diagnostico_confirmado }}</p>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+
+                        @if ($a->medicacion_indicada)
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Medicación Indicada</p>
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->medicacion_indicada }}</p>
+                        </div>
+                        @endif
+
+                        @if ($a->estudiosOrdenados->isNotEmpty())
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Estudios Ordenados</p>
+                            <div class="space-y-1.5">
+                                @foreach ($a->estudiosOrdenados as $estudio)
+                                <div class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                                    <span class="font-medium text-gray-800">{{ $estudio->estudio }}</span>
+                                    @if ($estudio->resultado)
+                                        <span class="text-gray-500 ml-2">— {{ $estudio->resultado }}</span>
+                                    @else
+                                        <span class="text-gray-400 ml-2 italic">Sin resultado</span>
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        @if ($a->notas)
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Notas</p>
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->notas }}</p>
+                        </div>
+                        @endif
+
+                        <div class="pt-1 flex justify-end">
+                            <a href="{{ route('admin.atenciones.edit', $a) }}"
+                               class="text-xs text-purple-600 hover:underline">
+                                <i class="fa-solid fa-pen-to-square fa-fw"></i> Editar atención
+                            </a>
+                        </div>
+
+                    @else
+                        <p class="text-sm text-gray-400 italic text-center py-2">
+                            Esta cita no tiene atención registrada.
+                        </p>
+                        @if (in_array($appt->status, ['confirmed', 'completed']))
+                        <div class="flex justify-center">
+                            <a href="{{ route('admin.appointments.atencion.create', $appt) }}"
+                               class="text-xs text-purple-600 hover:underline">
+                                <i class="fa-solid fa-plus fa-fw"></i> Registrar atención
+                            </a>
+                        </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
             @empty
-            <p class="text-gray-500 text-sm text-center py-8">No hay consultas registradas.</p>
+            <p class="text-gray-500 text-sm text-center py-8">No hay citas registradas para este paciente.</p>
             @endforelse
         </div>
 
