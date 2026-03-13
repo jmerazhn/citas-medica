@@ -20,7 +20,9 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            \Spatie\Permission\Models\Role::firstOrCreate(['name' => $role]);
+            \Spatie\Permission\Models\Role::firstOrCreate(
+                ['name' => $role, 'guard_name' => 'web']
+            );
         }
     }
 }
