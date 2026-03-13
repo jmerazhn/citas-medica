@@ -20,7 +20,10 @@ class AppServiceProvider extends ServiceProvider
         // Las desactivamos para registrarlas manualmente bajo el prefijo /{tenant}.
         Fortify::ignoreRoutes();
         Jetstream::ignoreRoutes();
+    }
 
+    public function boot(): void
+    {
         // Livewire envía sus requests AJAX a /livewire/update (sin prefijo tenant).
         // Lo reemplazamos con /{tenant}/livewire/update para que tenancy inicialice
         // la BD correcta en cada request de componente Livewire.
@@ -30,7 +33,8 @@ class AppServiceProvider extends ServiceProvider
                 ->name('livewire.update');
         });
 
-        // Redirigir al panel del tenant después del login
+        // Redirigir al panel del tenant después del login.
+        // Registrado en boot() para sobreescribir el binding default de Fortify.
         $this->app->singleton(LoginResponse::class, function () {
             return new class implements LoginResponse {
                 public function toResponse($request)
@@ -68,10 +72,5 @@ class AppServiceProvider extends ServiceProvider
                 }
             };
         });
-    }
-
-    public function boot(): void
-    {
-        //
     }
 }
