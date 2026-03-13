@@ -21,7 +21,7 @@ class AppointmentSlotService
             return [];
         }
 
-        $duration = config('appointment.duration', 30);
+        $duration = $schedule->slot_duration ?? config('appointment.duration', 30);
 
         $start = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->start_time);
         $end = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->end_time);

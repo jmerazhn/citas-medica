@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\DoctorSchedule;
+use App\Models\MotivoConsulta;
 use App\Models\Patient;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -18,32 +21,40 @@ class AppointmentController extends Controller
 
     public function create()
     {
-        $doctors = User::role('Doctor')->orderBy('name')->get();
+        $doctors  = User::role('Doctor')->orderBy('name')->get();
         $patients = Patient::orderBy('apellidos')->orderBy('nombres')->get();
+        $motivos  = MotivoConsulta::orderBy('nombre')->get();
 
-        return view('admin.appointments.create', compact('doctors', 'patients'));
+        return view('admin.appointments.create', compact('doctors', 'patients', 'motivos'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'doctor_id'  => 'required|exists:users,id',
-            'date'       => 'required|date|after_or_equal:today',
-            'time'       => 'required|date_format:H:i',
-            'reason'     => 'required|string|max:255',
-            'notes'      => 'nullable|string',
+            'patient_id'         => 'required|exists:patients,id',
+            'doctor_id'          => 'required|exists:users,id',
+            'date'               => 'required|date|after_or_equal:today',
+            'time'               => 'required|date_format:H:i',
+            'motivo_consulta_id' => 'required|exists:motivos_consulta,id',
+            'notes'              => 'nullable|string',
         ]);
 
         $scheduledAt = $data['date'] . ' ' . $data['time'] . ':00';
 
+        $schedule = DoctorSchedule::where('user_id', $data['doctor_id'])
+            ->where('day_of_week', Carbon::parse($data['date'])->dayOfWeek)
+            ->where('is_active', true)
+            ->first();
+
+        $duration = $schedule?->slot_duration ?? config('appointment.duration', 30);
+
         Appointment::create([
-            'patient_id'   => $data['patient_id'],
-            'doctor_id'    => $data['doctor_id'],
-            'scheduled_at' => $scheduledAt,
-            'duration'     => config('appointment.duration', 30),
-            'reason'       => $data['reason'],
-            'notes'        => $data['notes'] ?? null,
+            'patient_id'         => $data['patient_id'],
+            'doctor_id'          => $data['doctor_id'],
+            'scheduled_at'       => $scheduledAt,
+            'duration'           => $duration,
+            'motivo_consulta_id' => $data['motivo_consulta_id'],
+            'notes'              => $data['notes'] ?? null,
         ]);
 
         Session::flash('swal', [
@@ -57,41 +68,50 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load(['patient', 'doctor']);
+        $appointment->load(['patient', 'doctor', 'motivoConsulta', 'atencion.estudiosOrdenados']);
 
         return view('admin.appointments.show', compact('appointment'));
     }
 
     public function edit(Appointment $appointment)
     {
-        $appointment->load(['patient', 'doctor']);
-        $doctors = User::role('Doctor')->orderBy('name')->get();
+        $appointment->load(['patient', 'doctor', 'motivoConsulta']);
+        $doctors  = User::role('Doctor')->orderBy('name')->get();
         $patients = Patient::orderBy('apellidos')->orderBy('nombres')->get();
+        $motivos  = MotivoConsulta::orderBy('nombre')->get();
 
-        return view('admin.appointments.edit', compact('appointment', 'doctors', 'patients'));
+        return view('admin.appointments.edit', compact('appointment', 'doctors', 'patients', 'motivos'));
     }
 
     public function update(Request $request, Appointment $appointment)
     {
         $data = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'doctor_id'  => 'required|exists:users,id',
-            'date'       => 'required|date',
-            'time'       => 'required|date_format:H:i',
-            'reason'     => 'required|string|max:255',
-            'notes'      => 'nullable|string',
-            'status'     => 'sometimes|in:pending,confirmed,completed,cancelled',
+            'patient_id'         => 'required|exists:patients,id',
+            'doctor_id'          => 'required|exists:users,id',
+            'date'               => 'required|date',
+            'time'               => 'required|date_format:H:i',
+            'motivo_consulta_id' => 'required|exists:motivos_consulta,id',
+            'notes'              => 'nullable|string',
+            'status'             => 'sometimes|in:pending,confirmed,completed,cancelled',
         ]);
 
         $scheduledAt = $data['date'] . ' ' . $data['time'] . ':00';
 
+        $schedule = DoctorSchedule::where('user_id', $data['doctor_id'])
+            ->where('day_of_week', Carbon::parse($data['date'])->dayOfWeek)
+            ->where('is_active', true)
+            ->first();
+
+        $duration = $schedule?->slot_duration ?? $appointment->duration;
+
         $appointment->update([
-            'patient_id'   => $data['patient_id'],
-            'doctor_id'    => $data['doctor_id'],
-            'scheduled_at' => $scheduledAt,
-            'reason'       => $data['reason'],
-            'notes'        => $data['notes'] ?? null,
-            'status'       => $data['status'] ?? $appointment->status,
+            'patient_id'         => $data['patient_id'],
+            'doctor_id'          => $data['doctor_id'],
+            'scheduled_at'       => $scheduledAt,
+            'duration'           => $duration,
+            'motivo_consulta_id' => $data['motivo_consulta_id'],
+            'notes'              => $data['notes'] ?? null,
+            'status'             => $data['status'] ?? $appointment->status,
         ]);
 
         Session::flash('swal', [

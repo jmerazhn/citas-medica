@@ -14,6 +14,7 @@ class Appointment extends Model
         'scheduled_at',
         'duration',
         'status',
+        'motivo_consulta_id',
         'reason',
         'notes',
         'cancelled_reason',
@@ -37,6 +38,16 @@ class Appointment extends Model
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');
+    }
+
+    public function motivoConsulta()
+    {
+        return $this->belongsTo(MotivoConsulta::class);
+    }
+
+    public function atencion()
+    {
+        return $this->hasOne(Atencion::class);
     }
 
     public function getEndTimeAttribute(): Carbon

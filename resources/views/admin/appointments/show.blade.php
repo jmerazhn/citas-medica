@@ -28,6 +28,20 @@
                     <i class="fa fa-pen-to-square"></i> Editar
                 </x-wire-button>
 
+                @if (in_array($appointment->status, ['confirmed', 'completed']))
+                    @if ($appointment->atencion)
+                        <x-wire-button outline href="{{ route('admin.atenciones.edit', $appointment->atencion) }}"
+                            class="border-purple-400 text-purple-700 hover:bg-purple-50">
+                            <i class="fa-solid fa-stethoscope"></i> Ver / Editar Atención
+                        </x-wire-button>
+                    @else
+                        <x-wire-button href="{{ route('admin.appointments.atencion.create', $appointment) }}"
+                            class="bg-purple-600 hover:bg-purple-700 focus:ring-purple-500">
+                            <i class="fa-solid fa-stethoscope"></i> Registrar Atención
+                        </x-wire-button>
+                    @endif
+                @endif
+
                 @if ($appointment->status === 'pending')
                     <form method="POST" action="{{ route('admin.appointments.confirm', $appointment) }}" class="inline">
                         @csrf @method('PATCH')
@@ -88,7 +102,7 @@
                 </div>
                 <div class="flex gap-2">
                     <dt class="font-medium text-gray-500 w-36">Motivo:</dt>
-                    <dd class="text-gray-900">{{ $appointment->reason }}</dd>
+                    <dd class="text-gray-900">{{ $appointment->motivoConsulta?->nombre ?? $appointment->reason ?? '—' }}</dd>
                 </div>
             </dl>
         </x-wire-card>
@@ -117,6 +131,84 @@
             </dl>
         </x-wire-card>
     </div>
+
+    {{-- Resumen de Atención --}}
+    @if ($appointment->atencion)
+        @php $a = $appointment->atencion; @endphp
+        <div class="mt-4 space-y-4">
+
+            {{-- Crecimiento y Signos Vitales --}}
+            <div class="grid lg:grid-cols-2 gap-4">
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-3">Estado de Crecimiento</h3>
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        <div><dt class="text-gray-500">Peso</dt><dd class="text-gray-900">{{ $a->peso ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">Altura / Talla</dt><dd class="text-gray-900">{{ $a->altura ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">P.C.</dt><dd class="text-gray-900">{{ $a->pc ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">I.M.C.</dt><dd class="text-gray-900">{{ $a->imc ?? '—' }}</dd></div>
+                    </dl>
+                </x-wire-card>
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-3">Signos Vitales</h3>
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        <div><dt class="text-gray-500">Temperatura</dt><dd class="text-gray-900">{{ $a->temperatura ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">F.C.</dt><dd class="text-gray-900">{{ $a->fc ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">F.R.</dt><dd class="text-gray-900">{{ $a->fr ?? '—' }}</dd></div>
+                        <div><dt class="text-gray-500">Presión Arterial</dt><dd class="text-gray-900">{{ $a->presion_arterial ?? '—' }}</dd></div>
+                    </dl>
+                </x-wire-card>
+            </div>
+
+            {{-- Clínico --}}
+            <div class="grid lg:grid-cols-2 gap-4">
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-2">Sintomatología</h3>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->sintomatologia ?? '—' }}</p>
+                </x-wire-card>
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-2">Medicación Indicada</h3>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->medicacion_indicada ?? '—' }}</p>
+                </x-wire-card>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-4">
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-2">Diagnóstico Posible</h3>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->diagnostico_posible ?? '—' }}</p>
+                </x-wire-card>
+                <x-wire-card>
+                    <h3 class="font-semibold text-gray-700 mb-2">Diagnóstico Confirmado</h3>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->diagnostico_confirmado ?? '—' }}</p>
+                </x-wire-card>
+            </div>
+
+            @if ($a->estudiosOrdenados->isNotEmpty())
+            <x-wire-card>
+                <h3 class="font-semibold text-gray-700 mb-3">Estudios Ordenados</h3>
+                <div class="space-y-2">
+                    @foreach ($a->estudiosOrdenados as $estudio)
+                    <div class="border border-gray-200 rounded-lg p-3 bg-gray-50 text-sm">
+                        <p class="font-medium text-gray-800">{{ $estudio->estudio }}</p>
+                        @if ($estudio->resultado)
+                            <p class="text-gray-600 mt-1">{{ $estudio->resultado }}</p>
+                        @else
+                            <p class="text-gray-400 mt-1 italic">Sin resultado registrado</p>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+            </x-wire-card>
+            @endif
+
+            @if ($a->notas)
+            <x-wire-card>
+                <h3 class="font-semibold text-gray-700 mb-2">Notas</h3>
+                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->notas }}</p>
+            </x-wire-card>
+            @endif
+
+        </div>
+    @endif
 
     {{-- Modal de cancelación --}}
     <x-wire-modal name="cancel-appointment" max-width="md">

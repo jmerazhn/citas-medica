@@ -39,6 +39,17 @@
             </div>
         </x-wire-card>
 
+        @if ($errors->any())
+            <div class="mb-4 p-4 bg-red-50 border border-red-300 rounded-lg text-sm text-red-700">
+                <p class="font-semibold mb-1">Corrija los siguientes errores:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <x-wire-card>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
@@ -47,7 +58,8 @@
                             <th class="pb-3 pr-6">Activo</th>
                             <th class="pb-3 pr-6">Día</th>
                             <th class="pb-3 pr-6">Hora de inicio</th>
-                            <th class="pb-3">Hora de fin</th>
+                            <th class="pb-3 pr-6">Hora de fin</th>
+                            <th class="pb-3">Duración (min)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -66,14 +78,21 @@
                                 <td class="py-3 pr-6">
                                     <input type="time"
                                         name="schedules[{{ $dayNum }}][start_time]"
-                                        value="{{ $schedule?->start_time ?? '08:00' }}"
+                                        value="{{ $schedule ? \Carbon\Carbon::parse($schedule->start_time)->format('H:i') : '08:00' }}"
+                                        class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </td>
+                                <td class="py-3 pr-6">
+                                    <input type="time"
+                                        name="schedules[{{ $dayNum }}][end_time]"
+                                        value="{{ $schedule ? \Carbon\Carbon::parse($schedule->end_time)->format('H:i') : '17:00' }}"
                                         class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </td>
                                 <td class="py-3">
-                                    <input type="time"
-                                        name="schedules[{{ $dayNum }}][end_time]"
-                                        value="{{ $schedule?->end_time ?? '17:00' }}"
-                                        class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="number"
+                                        name="schedules[{{ $dayNum }}][slot_duration]"
+                                        value="{{ $schedule?->slot_duration ?? 30 }}"
+                                        min="5" max="180" step="5"
+                                        class="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </td>
                             </tr>
                         @endforeach

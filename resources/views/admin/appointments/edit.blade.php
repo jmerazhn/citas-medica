@@ -64,12 +64,19 @@
 
                 {{-- Motivo --}}
                 <div>
-                    <x-wire-input
+                    <x-wire-select
+                        name="motivo_consulta_id"
                         label="Motivo de consulta"
-                        name="reason"
-                        type="text"
-                        value="{{ old('reason', $appointment->reason) }}"
-                        class="w-full" />
+                        :options="$motivos"
+                        option-value="id"
+                        option-label="nombre"
+                        placeholder="Seleccione un motivo"
+                        :value="old('motivo_consulta_id', $appointment->motivo_consulta_id)"
+                        searchable
+                    />
+                    @error('motivo_consulta_id')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Notas --}}

@@ -16,5 +16,5 @@
         </x-wire-button>
     </x-slot>
 
-    @livewire('admin.datatables.appointment-table')
+    @livewire('admin.appointment-calendar')
 </x-admin-layout>

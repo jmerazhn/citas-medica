@@ -38,6 +38,7 @@ class TablaCrecimientoTable extends DataTableComponent
     public function columns(): array
     {
         return [
+            Column::make('id', 'id')->hideIf(true),
             Column::make('Tipo', 'tipo')->sortable()->searchable()
                 ->format(fn($v) => TablaCrecimiento::$tipos[$v] ?? $v),
             Column::make('Sexo', 'sexo')->sortable()

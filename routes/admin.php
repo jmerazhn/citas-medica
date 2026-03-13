@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Catalogos\PlanVacunacionController;
 use App\Http\Controllers\Admin\Catalogos\PatologiaCatalogoController;
 use App\Http\Controllers\Admin\Catalogos\TablaCrecimientoController;
 use App\Http\Controllers\Admin\Catalogos\SocialCoverageController;
+use App\Http\Controllers\Admin\Expediente\AtencionController;
 use App\Http\Controllers\Admin\Expediente\ConsultaController;
 use App\Http\Controllers\Admin\Expediente\VacunaController;
 use App\Http\Controllers\Admin\Expediente\PatologiaPacienteController;
@@ -42,6 +43,10 @@ Route::resource('patients.partos', PartoController::class)
 
 // Citas
 Route::resource('appointments', AppointmentController::class);
+Route::get('appointments/{appointment}/atencion/create', [AtencionController::class, 'create'])->name('appointments.atencion.create');
+Route::post('appointments/{appointment}/atencion', [AtencionController::class, 'store'])->name('appointments.atencion.store');
+Route::get('atenciones/{atencion}/edit', [AtencionController::class, 'edit'])->name('atenciones.edit');
+Route::put('atenciones/{atencion}', [AtencionController::class, 'update'])->name('atenciones.update');
 Route::patch('appointments/{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('appointments.confirm');
 Route::patch('appointments/{appointment}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
 Route::patch('appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
