@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confiar en el proxy reverso (nginx del host) para detectar HTTPS correctamente
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+
         // InitializeTenancyByPath debe tener mayor prioridad que StartSession.
         // Así el switch de BD ocurre antes de que la sesión/auth intenten resolver usuarios.
         $middleware->priority([
