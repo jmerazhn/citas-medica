@@ -198,6 +198,6 @@ return [
      */
     'seeder_parameters' => [
         '--class' => 'TenantDatabaseSeeder', // seeder específico para tenants
-        // '--force' => true, // Necesario en producción
+        '--force' => true, // Necesario en producción
     ],
 ];
