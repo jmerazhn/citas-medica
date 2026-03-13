@@ -1,226 +1,228 @@
-# Guía de Despliegue en Contabo (Docker)
+# Guía de Despliegue — Servidor Contabo
 
-## Arquitectura en el servidor
+## Estado actual del servidor
 
 ```
-Contabo VPS
-│
-├── nginx-proxy  (puerto 80/443 → enruta por dominio)
-│     ├── → powerbi-app  (dominio: reportes.tu-dominio.com)
-│     └── → citas-app    (dominio: citas.tu-dominio.com)
-│
-├── powerbi-app   [contenedor existente]
-├── powerbi-db    [MySQL existente]
-│
-├── citas-app     [NUEVO]
-└── citas-db      [NUEVO MySQL]
+Contenedores corriendo:
+  difiesta-bi-app   → puerto 8080 (expuesto directo)
+  difiesta-bi-db    → MySQL 8.0, puerto 3306
+
+Red existente: difiesta-network
+```
+
+## Arquitectura objetivo
+
+```
+Internet
+    │
+    ├── puerto 80/443
+    │
+┌───▼──────────────────────────────────────────┐
+│  nginx-proxy  (nuevo)                        │
+│  bi.tu-dominio.com   → difiesta-bi-app:80    │
+│  citas.tu-dominio.com → citas-app:80         │
+└──────────────────────────────────────────────┘
+         │                        │
+         │ difiesta-network       │ citas-network
+         │                        │
+  difiesta-bi-app          citas-app (nuevo)
+  difiesta-bi-db           citas-db  (nuevo)
+```
+
+> El puerto 8080 de difiesta-bi-app quedará solo para acceso interno.
+> Todo el tráfico externo pasará por nginx-proxy en 80/443.
+
+---
+
+## Paso 1 — Conectar difiesta-bi-app a la red del proxy
+
+El nginx-proxy necesita llegar a `difiesta-bi-app`. Como el proxy estará
+en `difiesta-network`, hay que asegurarse de que la bi-app esté en esa red:
+
+```bash
+# Verificar que difiesta-bi-app ya está en difiesta-network
+docker inspect difiesta-bi-app | grep -A 10 '"Networks"'
+# Si aparece difiesta-network, ya está. Si no:
+docker network connect difiesta-network difiesta-bi-app
 ```
 
 ---
 
-## Prerequisitos en el servidor
+## Paso 2 — Subir el proyecto Citas al servidor
 
 ```bash
-# Verificar Docker y versión
-docker --version
-docker compose version
-
-# Verificar contenedores existentes
-docker ps
-
-# Verificar redes Docker existentes (anotarlas)
-docker network ls
-```
-
----
-
-## Paso 1 — Subir el proyecto al servidor
-
-### Opción A: Git (recomendado)
-
-```bash
-# En el servidor
+# Opción A: Git
 cd /opt
 git clone https://github.com/tu-usuario/citas.git
 cd citas
-```
 
-### Opción B: rsync desde tu máquina local
-
-```bash
-# Desde Windows (WSL) hacia el servidor
-rsync -avz --exclude='node_modules' --exclude='.env' --exclude='vendor' \
+# Opción B: rsync desde tu PC (ejecutar en WSL)
+rsync -avz \
+  --exclude='node_modules' \
+  --exclude='.env' \
+  --exclude='vendor' \
+  --exclude='public/build' \
   /mnt/c/xampp/htdocs/laravel/citas/ \
-  usuario@IP_CONTABO:/opt/citas/
+  root@IP_DEL_SERVIDOR:/opt/citas/
 ```
 
 ---
 
-## Paso 2 — Configurar el .env de producción
+## Paso 3 — Crear el .env de producción
 
 ```bash
 cd /opt/citas
-
-# Copiar el ejemplo y editar
 cp docker/.env.production.example .env
 nano .env
 ```
 
-**Valores a completar obligatoriamente:**
+**Completar estos valores:**
 
-| Variable | Descripción |
-|---|---|
-| `APP_KEY` | Generar con `php artisan key:generate --show` |
-| `APP_URL` | URL pública: `https://citas.tu-dominio.com` |
-| `DB_PASSWORD` | Contraseña para el usuario MySQL |
-| `DB_ROOT_PASSWORD` | Contraseña root MySQL (solo primer arranque) |
+```env
+APP_KEY=           # ver cómo generarlo abajo
+APP_URL=https://citas.tu-dominio.com
 
-### Generar APP_KEY (sin tener PHP local)
+DB_HOST=citas-db   # nombre del contenedor MySQL de citas
+DB_DATABASE=citas_central
+DB_USERNAME=citas_user
+DB_PASSWORD=UnaContraseñaSegura123
+DB_ROOT_PASSWORD=OtraContraseñaRoot456
+```
 
+**Generar APP_KEY:**
 ```bash
-# Usando el contenedor de PHP del servidor existente o:
-docker run --rm php:8.2-cli php -r "echo 'base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
+docker run --rm php:8.2-cli php -r \
+  "echo 'base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
 ```
 
 ---
 
-## Paso 3 — Verificar red compartida con contenedores existentes
-
-Si el MySQL de citas va a compartir red con la app existente de PowerBI:
+## Paso 4 — Configurar dominios en nginx-proxy
 
 ```bash
-# Ver el nombre de la red actual del PowerBI
-docker inspect powerbi-app | grep -i network
+# Editar los archivos de virtual host con TUS dominios reales
+nano /opt/citas/docker/nginx-proxy/conf.d/citas.conf
+nano /opt/citas/docker/nginx-proxy/conf.d/difiesta-bi.conf
 
-# Si existe una red compartida (ej: "shared-net"), usar ese nombre en docker-compose.yml
-# Si NO existe, crearla:
-docker network create shared-net
-
-# Conectar el contenedor MySQL existente a shared-net (si se va a compartir)
-docker network connect shared-net powerbi-db
+# Reemplazar "tu-dominio.com" por el dominio real en ambos archivos
+# Ejemplo: citas.clinica-xyz.com y bi.clinica-xyz.com
 ```
-
-> **Si prefieres MySQL separado** (recomendado para aislamiento), no necesitas hacer nada — el `docker-compose.yml` crea `citas-db` independiente.
 
 ---
 
-## Paso 4 — Construir y levantar los contenedores
+## Paso 5 — Levantar SSL (antes de subir el proxy con HTTPS)
+
+Primero levantamos nginx-proxy solo con HTTP para que certbot pueda
+verificar el dominio:
 
 ```bash
 cd /opt/citas/docker
 
-# Construir imagen (primera vez, tarda ~5 minutos)
-docker compose build --no-cache
+# Crear carpeta de certificados
+mkdir -p nginx-proxy/certs
 
-# Levantar en segundo plano
-docker compose up -d
+# Levantar SOLO el proxy temporalmente en modo HTTP
+# Comentar los bloques "listen 443" en ambos .conf primero:
+sed -i 's/return 301/# return 301/' nginx-proxy/conf.d/*.conf
 
-# Ver logs en tiempo real
-docker compose logs -f citas-app
-```
+docker compose up -d nginx-proxy
 
-### Verificar que todo esté corriendo
-
-```bash
-docker compose ps
-# Debe mostrar: citas-app, citas-db, nginx-proxy — todos "running"
-```
-
----
-
-## Paso 5 — SSL con Let's Encrypt
-
-### Instalar Certbot en el servidor (si no está)
-
-```bash
-apt install certbot -y
-```
-
-### Obtener certificado
-
-```bash
-# Primero asegúrate de que el dominio apunte a la IP del servidor (DNS)
-certbot certonly --webroot \
-  -w /var/www/certbot \
+# Obtener certificado para citas
+docker compose run --rm certbot certonly \
+  --webroot \
+  --webroot-path=/var/www/certbot \
   -d citas.tu-dominio.com \
   --email tu@email.com \
   --agree-tos \
   --non-interactive
-```
 
-### Copiar certificados al directorio del proxy
+# Obtener certificado para BI (si tiene dominio)
+docker compose run --rm certbot certonly \
+  --webroot \
+  --webroot-path=/var/www/certbot \
+  -d bi.tu-dominio.com \
+  --email tu@email.com \
+  --agree-tos \
+  --non-interactive
 
-```bash
-cp /etc/letsencrypt/live/citas.tu-dominio.com/fullchain.pem \
-   /opt/citas/docker/nginx-proxy/certs/fullchain.pem
+# Restaurar los redirects HTTPS
+sed -i 's/# return 301/return 301/' nginx-proxy/conf.d/*.conf
 
-cp /etc/letsencrypt/live/citas.tu-dominio.com/privkey.pem \
-   /opt/citas/docker/nginx-proxy/certs/privkey.pem
-
-# Recargar nginx
-docker compose exec nginx-proxy nginx -s reload
-```
-
-### Renovación automática (cron)
-
-```bash
-crontab -e
-# Agregar esta línea:
-0 3 * * * certbot renew --quiet && \
-  cp /etc/letsencrypt/live/citas.tu-dominio.com/fullchain.pem /opt/citas/docker/nginx-proxy/certs/fullchain.pem && \
-  cp /etc/letsencrypt/live/citas.tu-dominio.com/privkey.pem /opt/citas/docker/nginx-proxy/certs/privkey.pem && \
-  docker exec nginx-proxy nginx -s reload
+# Reiniciar proxy con HTTPS activo
+docker compose restart nginx-proxy
 ```
 
 ---
 
-## Paso 6 — Sembrar datos iniciales
+## Paso 6 — Levantar todo
+
+```bash
+cd /opt/citas/docker
+
+# Construir imagen de citas (primera vez: ~5 min)
+docker compose build --no-cache citas-app
+
+# Levantar todos los servicios
+docker compose up -d
+
+# Verificar que todos están corriendo
+docker compose ps
+```
+
+Salida esperada:
+```
+NAME            STATUS          PORTS
+citas-app       Up
+citas-db        Up (healthy)
+nginx-proxy     Up              0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+certbot         Up
+```
+
+---
+
+## Paso 7 — Sembrar datos iniciales
 
 ```bash
 # Entrar al contenedor
 docker exec -it citas-app bash
 
-# Sembrar la base de datos central
+# Crear super-admin
 php artisan db:seed --class=SuperAdminSeeder
 
-# Crear el primer tenant (consultorio)
-php artisan tenants:create  # o usar el panel super-admin
-
-# Sembrar datos del tenant (catálogos, curvas OMS, etc.)
-php artisan tenants:seed --class=TenantDatabaseSeeder
-
+# Salir
 exit
+```
+
+Luego entrar al panel super-admin en `https://citas.tu-dominio.com/super-admin`
+para crear el primer tenant (consultorio).
+
+Después sembrar catálogos del tenant:
+
+```bash
+docker exec -it citas-app php artisan tenants:seed --class=TenantDatabaseSeeder
 ```
 
 ---
 
-## Paso 7 — Configurar el nginx del servidor existente
+## Paso 8 — Deshabilitar el puerto 8080 expuesto de difiesta-bi-app
 
-Si ya tienes un nginx-proxy corriendo para el PowerBI, **no uses el `nginx-proxy` del docker-compose de citas**. En cambio, agrega un virtual host al nginx existente:
-
-```bash
-# Editar la configuración del proxy existente
-nano /ruta/a/tu/nginx-proxy/conf.d/citas.conf
-```
-
-Pega el contenido de `docker/nginx-proxy/conf.d/citas.conf` ajustando el dominio, luego:
+Una vez que el proxy funcione, el puerto 8080 ya no debe estar expuesto
+directamente. Para hacerlo, editar el docker-compose.yml de la app BI
+y quitar el `ports: - "8080:80"`, luego reiniciar esa app.
 
 ```bash
-docker exec tu-nginx-proxy nginx -s reload
+# Verificar que BI funciona a través del proxy ANTES de hacer esto
+curl -I https://bi.tu-dominio.com
+
+# Si funciona, quitar el puerto expuesto del contenedor BI
+# (editar el docker-compose.yml de difiesta-bi y reiniciar)
 ```
 
 ---
 
 ## Comandos de mantenimiento
 
-### Ver logs
-
-```bash
-docker compose -f /opt/citas/docker/docker-compose.yml logs -f citas-app
-docker compose -f /opt/citas/docker/docker-compose.yml logs -f citas-db
-```
-
-### Actualizar el código (deploy)
+### Actualizar código (deploy)
 
 ```bash
 cd /opt/citas
@@ -228,75 +230,95 @@ cd /opt/citas
 # Bajar cambios
 git pull origin main
 
-# Reconstruir y reiniciar solo la app (sin tocar la DB)
+# Reconstruir y reiniciar solo la app
 docker compose -f docker/docker-compose.yml up -d --build citas-app
 
 # Limpiar imágenes antiguas
 docker image prune -f
 ```
 
-### Ejecutar comandos Artisan
+### Comandos Artisan
 
 ```bash
 docker exec -it citas-app php artisan migrate
 docker exec -it citas-app php artisan tenants:migrate
 docker exec -it citas-app php artisan cache:clear
+docker exec -it citas-app php artisan config:cache
 docker exec -it citas-app php artisan queue:restart
+```
+
+### Ver logs en tiempo real
+
+```bash
+docker compose -f /opt/citas/docker/docker-compose.yml logs -f citas-app
+docker compose -f /opt/citas/docker/docker-compose.yml logs -f nginx-proxy
 ```
 
 ### Backup de base de datos
 
 ```bash
-# Backup completo
-docker exec citas-db mysqldump \
-  -u root -p"$DB_ROOT_PASSWORD" \
-  --all-databases \
+# Crear directorio de backups
+mkdir -p /opt/backups
+
+# Backup manual
+docker exec citas-db sh -c \
+  'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" --all-databases' \
   > /opt/backups/citas_$(date +%Y%m%d_%H%M%S).sql
 
-# Restaurar
-docker exec -i citas-db mysql \
-  -u root -p"$DB_ROOT_PASSWORD" \
-  < /opt/backups/citas_20260313_120000.sql
+# Backup automático diario a las 2am (crontab -e)
+0 2 * * * docker exec citas-db sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" --all-databases' > /opt/backups/citas_$(date +\%Y\%m\%d).sql && find /opt/backups -name "citas_*.sql" -mtime +7 -delete
 ```
 
-### Backup automático diario (cron)
+### Restaurar backup
 
 ```bash
-crontab -e
-# Agregar:
-0 2 * * * docker exec citas-db mysqldump -u root -p"TU_ROOT_PASSWORD" --all-databases > /opt/backups/citas_$(date +\%Y\%m\%d).sql && find /opt/backups -name "citas_*.sql" -mtime +7 -delete
+docker exec -i citas-db sh -c \
+  'mysql -u root -p"$MYSQL_ROOT_PASSWORD"' \
+  < /opt/backups/citas_20260313.sql
 ```
 
 ---
 
-## Solución de problemas comunes
+## Solución de problemas
 
 ### El contenedor no arranca
 
 ```bash
-docker compose logs citas-app
-# Revisar errores de .env, permisos o conexión a DB
+docker compose -f docker/docker-compose.yml logs citas-app
+# Los errores más comunes: .env mal configurado, DB no disponible
 ```
 
-### Error de conexión a MySQL
+### Error 502 Bad Gateway en el proxy
 
 ```bash
-# Verificar que citas-db esté healthy
-docker compose ps
+# Verificar que citas-app está corriendo y responde internamente
+docker exec nginx-proxy curl -I http://citas-app:80
 
-# Probar conexión desde la app
-docker exec -it citas-app php artisan tinker
-# >>> DB::connection()->getPdo()
+# Verificar que difiesta-bi-app responde
+docker exec nginx-proxy curl -I http://difiesta-bi-app:80
 ```
 
-### Assets (CSS/JS) no cargan
+### Certificado SSL no encontrado
 
 ```bash
-# Verificar que public/build existe
+# Verificar que los certificados existen
+ls /opt/citas/docker/nginx-proxy/certs/live/
+
+# Si falta alguno, correr certbot de nuevo
+docker compose -f docker/docker-compose.yml run --rm certbot certonly \
+  --webroot --webroot-path=/var/www/certbot \
+  -d citas.tu-dominio.com --email tu@email.com --agree-tos
+```
+
+### Assets CSS/JS no cargan (404)
+
+```bash
+# Verificar que public/build existe dentro del contenedor
 docker exec citas-app ls public/build
 
-# Si no existe, recompilar
-docker exec citas-app sh -c "npm ci && npm run build"
+# Si no existe, el build falló durante la construcción de imagen
+# Revisar logs de docker build:
+docker compose -f docker/docker-compose.yml build --no-cache --progress=plain citas-app 2>&1 | tail -50
 ```
 
 ### Permisos de storage
@@ -304,29 +326,4 @@ docker exec citas-app sh -c "npm ci && npm run build"
 ```bash
 docker exec citas-app chown -R www-data:www-data /var/www/citas/storage
 docker exec citas-app chmod -R 775 /var/www/citas/storage
-```
-
----
-
-## Estructura de archivos Docker
-
-```
-docker/
-├── Dockerfile                    # Imagen de la app
-├── entrypoint.sh                 # Script de inicio
-├── docker-compose.yml            # Orquestación
-├── .env.production.example       # Variables de entorno de ejemplo
-├── nginx/
-│   ├── nginx.conf                # Config principal nginx (dentro del contenedor)
-│   └── default.conf              # Virtual host de la app
-├── php/
-│   └── php.ini                   # Config PHP personalizada
-├── supervisor/
-│   └── supervisord.conf          # Proceso: php-fpm + nginx + queue worker
-└── nginx-proxy/
-    ├── conf.d/
-    │   └── citas.conf            # Virtual host del proxy externo
-    └── certs/                    # Certificados SSL (generados con certbot)
-        ├── fullchain.pem
-        └── privkey.pem
 ```

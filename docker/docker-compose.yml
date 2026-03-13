@@ -8,18 +8,18 @@ services:
     container_name: citas-app
     restart: unless-stopped
     env_file: ../.env
+    ports:
+      - "8081:80"          # nginx del host proxeará a 127.0.0.1:8081
     volumes:
       - citas_storage:/var/www/citas/storage/app
       - citas_logs:/var/www/citas/storage/logs
     networks:
-      - citas-net
-      - shared-net        # red compartida con el MySQL existente
+      - citas-network
     depends_on:
-      - citas-db
+      citas-db:
+        condition: service_healthy
 
   # ── Base de datos exclusiva para Citas ───────────────────────────────────────
-  # (Si prefieres usar el MySQL existente del servidor, elimina este servicio
-  #  y ajusta DB_HOST en el .env apuntando al contenedor MySQL actual)
   citas-db:
     image: mysql:8.0
     container_name: citas-db
@@ -32,32 +32,12 @@ services:
     volumes:
       - citas_mysql:/var/lib/mysql
     networks:
-      - citas-net
+      - citas-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # ── Nginx Reverse Proxy ───────────────────────────────────────────────────────
-  # Si ya tienes un proxy (Traefik, Nginx Proxy Manager, etc.) en el servidor,
-  # elimina este servicio y conecta citas-app directamente a tu red existente.
-  nginx-proxy:
-    image: nginx:alpine
-    container_name: nginx-proxy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx-proxy/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx-proxy/certs:/etc/nginx/certs:ro
-      - /var/www/certbot:/var/www/certbot:ro
-    networks:
-      - citas-net
-      - shared-net
-    depends_on:
-      - citas-app
 
 volumes:
   citas_storage:
@@ -65,7 +45,5 @@ volumes:
   citas_mysql:
 
 networks:
-  citas-net:
+  citas-network:
     driver: bridge
-  shared-net:
-    external: true   # red existente donde está el MySQL actual del servidor
