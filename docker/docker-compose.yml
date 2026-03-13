@@ -1,0 +1,71 @@
+services:
+
+  # ── Aplicación Citas ─────────────────────────────────────────────────────────
+  citas-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: citas-app
+    restart: unless-stopped
+    env_file: ../.env
+    volumes:
+      - citas_storage:/var/www/citas/storage/app
+      - citas_logs:/var/www/citas/storage/logs
+    networks:
+      - citas-net
+      - shared-net        # red compartida con el MySQL existente
+    depends_on:
+      - citas-db
+
+  # ── Base de datos exclusiva para Citas ───────────────────────────────────────
+  # (Si prefieres usar el MySQL existente del servidor, elimina este servicio
+  #  y ajusta DB_HOST en el .env apuntando al contenedor MySQL actual)
+  citas-db:
+    image: mysql:8.0
+    container_name: citas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - citas_mysql:/var/lib/mysql
+    networks:
+      - citas-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Nginx Reverse Proxy ───────────────────────────────────────────────────────
+  # Si ya tienes un proxy (Traefik, Nginx Proxy Manager, etc.) en el servidor,
+  # elimina este servicio y conecta citas-app directamente a tu red existente.
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-proxy/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx-proxy/certs:/etc/nginx/certs:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    networks:
+      - citas-net
+      - shared-net
+    depends_on:
+      - citas-app
+
+volumes:
+  citas_storage:
+  citas_logs:
+  citas_mysql:
+
+networks:
+  citas-net:
+    driver: bridge
+  shared-net:
+    external: true   # red existente donde está el MySQL actual del servidor
