@@ -67,11 +67,6 @@ class User extends Authenticatable
         ];
     }
 
-    // Relaciones uno a uno
-    public function patient(){
-        return $this->hasOne(Patient::class);
-    }
-
     public function doctorSchedules()
     {
         return $this->hasMany(DoctorSchedule::class);

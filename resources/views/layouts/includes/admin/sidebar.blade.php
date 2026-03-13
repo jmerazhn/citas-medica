@@ -36,6 +36,39 @@
             'href' => route('admin.appointments.index'),
             'active' => request()->routeIs('admin.appointments.*'),
         ],
+        [
+            'header' => 'Catálogos',
+        ],
+        [
+            'name' => 'Motivos de Consulta',
+            'icon' => 'fa-solid fa-list-ul',
+            'href' => route('admin.catalogos.motivos-consulta.index'),
+            'active' => request()->routeIs('admin.catalogos.motivos-consulta.*'),
+        ],
+        [
+            'name' => 'Planes de Vacunación',
+            'icon' => 'fa-solid fa-syringe',
+            'href' => route('admin.catalogos.planes-vacunacion.index'),
+            'active' => request()->routeIs('admin.catalogos.planes-vacunacion.*'),
+        ],
+        [
+            'name' => 'Patologías',
+            'icon' => 'fa-solid fa-notes-medical',
+            'href' => route('admin.catalogos.patologias.index'),
+            'active' => request()->routeIs('admin.catalogos.patologias.*'),
+        ],
+        [
+            'name' => 'Coberturas Sociales',
+            'icon' => 'fa-solid fa-shield-halved',
+            'href' => route('admin.catalogos.coberturas-sociales.index'),
+            'active' => request()->routeIs('admin.catalogos.coberturas-sociales.*'),
+        ],
+        [
+            'name' => 'Tablas de Crecimiento',
+            'icon' => 'fa-solid fa-chart-line',
+            'href' => route('admin.catalogos.tablas-crecimiento.index'),
+            'active' => request()->routeIs('admin.catalogos.tablas-crecimiento.*'),
+        ],
     ];
 @endphp
 

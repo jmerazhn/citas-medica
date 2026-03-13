@@ -12,7 +12,7 @@ class AppointmentTable extends DataTableComponent
     public function builder(): Builder
     {
         return Appointment::query()
-            ->with(['patient.user', 'doctor']);
+            ->with(['patient', 'doctor']);
     }
 
     public function configure(): void
@@ -25,8 +25,9 @@ class AppointmentTable extends DataTableComponent
         return [
             Column::make('Id', 'id')
                 ->sortable(),
-            Column::make('Paciente', 'patient.user.name')
-                ->sortable(),
+            Column::make('Paciente', 'patient.nombres')
+                ->sortable()
+                ->format(fn ($value, $row) => $row->patient?->full_name),
             Column::make('Doctor', 'doctor.name')
                 ->sortable(),
             Column::make('Fecha / Hora', 'scheduled_at')

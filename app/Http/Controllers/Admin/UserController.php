@@ -46,15 +46,9 @@ class UserController extends Controller
         Session::flash('swal', [
             'icon' => 'success',
             'title' => 'Usuario creado exitosamente',
-            'text' => 'El usuario ha sido creado y asignado a los roles seleccionados.',            
+            'text' => 'El usuario ha sido creado y asignado a los roles seleccionados.',
         ]);
 
-        if($user::role('Paciente')){
-            $patient = $user->patient()->create([]);
-            return redirect()->route('admin.patients.edit', $patient);
-        }
-
-        
         return redirect()->route('admin.users.index');
     }
 

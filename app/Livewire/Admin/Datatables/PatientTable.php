@@ -11,8 +11,7 @@ class PatientTable extends DataTableComponent
 {
     public function builder(): Builder
     {
-        return Patient::query()
-            ->with('user');
+        return Patient::query();
     }
 
     public function configure(): void
@@ -23,17 +22,19 @@ class PatientTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id", "id")
+            Column::make('Id', 'id')
                 ->sortable(),
-            Column::make("Nombre", "user.name")
+            Column::make('Nombres', 'nombres')
                 ->sortable(),
-            Column::make("Email", "user.email")
+            Column::make('Apellidos', 'apellidos')
                 ->sortable(),
-            Column::make("Acciones")
+            Column::make('Teléfono', 'telefono')
+                ->sortable(),
+            Column::make('Ciudad', 'ciudad')
+                ->sortable(),
+            Column::make('Acciones')
                 ->label(
-                    function($row) {
-                        return view('admin.patients.actions', ['patient' => $row]);
-                    }
+                    fn ($row) => view('admin.patients.actions', ['patient' => $row])
                 ),
         ];
     }

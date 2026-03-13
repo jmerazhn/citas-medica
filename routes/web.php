@@ -2,18 +2,5 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/admin');
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-});
+// Raíz: redirigir al login del super-admin
+Route::redirect('/', '/super-admin/login');

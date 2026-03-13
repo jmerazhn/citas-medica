@@ -5,83 +5,114 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BloodType;
 use App\Models\Patient;
+use App\Models\SocialCoverage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+
 class PatientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('admin.patients.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('admin.patients.create');
+        $bloodTypes = BloodType::all();
+        $socialCoverages = SocialCoverage::orderBy('name')->get();
+
+        return view('admin.patients.create', compact('bloodTypes', 'socialCoverages'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'nombres'             => 'required|string|max:255',
+            'apellidos'           => 'required|string|max:255',
+            'sexo'                => 'nullable|in:M,F',
+            'fecha_nacimiento'    => 'nullable|date',
+            'madre'               => 'nullable|string|max:255',
+            'padre'               => 'nullable|string|max:255',
+            'domicilio'           => 'nullable|string|max:255',
+            'ciudad'              => 'nullable|string|max:255',
+            'telefono'            => 'nullable|string|max:30',
+            'social_coverage_id'  => 'nullable|exists:social_coverages,id',
+            'blood_type_id'       => 'nullable|exists:blood_types,id',
+            'notas_importantes'   => 'nullable|string',
+        ]);
+
+        $patient = Patient::create($data);
+
+        Session::flash('swal', [
+            'icon'  => 'success',
+            'title' => 'Paciente registrado',
+            'text'  => 'El paciente ha sido registrado correctamente.',
+        ]);
+
+        return redirect()->route('admin.patients.edit', $patient);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Patient $patient)
     {
+        $patient->load([
+            'bloodType',
+            'socialCoverage',
+            'consultas.motivoConsulta',
+            'vacunas.planVacunacion',
+            'patologias.patologia',
+            'embarazos',
+            'partos.embarazo',
+        ]);
+
         return view('admin.patients.show', compact('patient'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Patient $patient)
     {
         $bloodTypes = BloodType::all();
-        return view('admin.patients.edit', compact('patient', 'bloodTypes'));
+        $socialCoverages = SocialCoverage::orderBy('name')->get();
+
+        return view('admin.patients.edit', compact('patient', 'bloodTypes', 'socialCoverages'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Patient $patient)
     {
         $data = $request->validate([
-            'blood_type_id' => 'nullable|exists:blood_types,id',
-            'allergies' => 'nullable|string|max:255',
-            'chronic_conditions' => 'nullable|string|max:255',
-            'surgical_history' => 'nullable|string|max:255',
-            'family_medical_history' => 'nullable|string|max:255',
-            'observations' => 'nullable|string|max:255',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_relationship' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:20',
+            'nombres'             => 'required|string|max:255',
+            'apellidos'           => 'required|string|max:255',
+            'sexo'                => 'nullable|in:M,F',
+            'fecha_nacimiento'    => 'nullable|date',
+            'madre'               => 'nullable|string|max:255',
+            'padre'               => 'nullable|string|max:255',
+            'domicilio'           => 'nullable|string|max:255',
+            'ciudad'              => 'nullable|string|max:255',
+            'telefono'            => 'nullable|string|max:30',
+            'social_coverage_id'  => 'nullable|exists:social_coverages,id',
+            'blood_type_id'       => 'nullable|exists:blood_types,id',
+            'notas_importantes'   => 'nullable|string',
         ]);
 
         $patient->update($data);
 
         Session::flash('swal', [
-            'icon' => 'success',
+            'icon'  => 'success',
             'title' => 'Paciente actualizado',
-            'text' => 'Los datos del paciente se han actualizado correctamente.',
+            'text'  => 'Los datos del paciente se han actualizado correctamente.',
         ]);
+
         return redirect()->route('admin.patients.edit', $patient);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Patient $patient)
     {
-        //
+        $patient->delete();
+
+        Session::flash('swal', [
+            'icon'  => 'success',
+            'title' => 'Paciente eliminado',
+            'text'  => 'El paciente ha sido eliminado correctamente.',
+        ]);
+
+        return redirect()->route('admin.patients.index');
     }
 }

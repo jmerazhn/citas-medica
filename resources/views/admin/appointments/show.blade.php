@@ -64,7 +64,7 @@
             <dl class="space-y-3 text-sm">
                 <div class="flex gap-2">
                     <dt class="font-medium text-gray-500 w-36">Paciente:</dt>
-                    <dd class="text-gray-900">{{ $appointment->patient->user->name }}</dd>
+                    <dd class="text-gray-900">{{ $appointment->patient?->full_name }}</dd>
                 </div>
                 <div class="flex gap-2">
                     <dt class="font-medium text-gray-500 w-36">Doctor:</dt>

@@ -42,7 +42,7 @@
                         label="Paciente"
                         :options="$patients"
                         option-value="id"
-                        option-label="user.name"
+                        option-label="full_name"
                         placeholder="Seleccione un paciente"
                         :value="old('patient_id', $appointment->patient_id)"
                         searchable

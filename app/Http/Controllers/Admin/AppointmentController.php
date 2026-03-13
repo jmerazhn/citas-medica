@@ -19,7 +19,7 @@ class AppointmentController extends Controller
     public function create()
     {
         $doctors = User::role('Doctor')->orderBy('name')->get();
-        $patients = Patient::with('user')->orderBy('id')->get();
+        $patients = Patient::orderBy('apellidos')->orderBy('nombres')->get();
 
         return view('admin.appointments.create', compact('doctors', 'patients'));
     }
@@ -57,16 +57,16 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load(['patient.user', 'doctor']);
+        $appointment->load(['patient', 'doctor']);
 
         return view('admin.appointments.show', compact('appointment'));
     }
 
     public function edit(Appointment $appointment)
     {
-        $appointment->load(['patient.user', 'doctor']);
+        $appointment->load(['patient', 'doctor']);
         $doctors = User::role('Doctor')->orderBy('name')->get();
-        $patients = Patient::with('user')->orderBy('id')->get();
+        $patients = Patient::orderBy('apellidos')->orderBy('nombres')->get();
 
         return view('admin.appointments.edit', compact('appointment', 'doctors', 'patients'));
     }
