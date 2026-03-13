@@ -13,6 +13,9 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpiar caché de Spatie para que encuentre los roles recién creados
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $user = User::firstOrCreate(
             ['email' => 'josuemeraz7@gmail.com'],
             [
