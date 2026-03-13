@@ -14,6 +14,7 @@
         ],
     ]">
 
+<div x-data="{ cancelModal: false }">
     <x-wire-card class="mb-4">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -62,8 +63,7 @@
 
                 @if (!in_array($appointment->status, ['cancelled', 'completed']))
                     <button type="button"
-                        x-data
-                        x-on:click="$dispatch('open-modal', 'cancel-appointment')"
+                        @click="cancelModal = true"
                         class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">
                         <i class="fa fa-ban"></i> Cancelar
                     </button>
@@ -211,11 +211,23 @@
     @endif
 
     {{-- Modal de cancelación --}}
-    <x-wire-modal name="cancel-appointment" max-width="md">
-        <x-wire-card>
+    <div
+        x-show="cancelModal"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        style="display:none">
+
+        <div class="fixed inset-0 bg-black/50" @click="cancelModal = false"></div>
+
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10 p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Cancelar Cita</h3>
-                <button x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600">
+                <button @click="cancelModal = false" class="text-gray-400 hover:text-gray-600">
                     <i class="fa fa-times"></i>
                 </button>
             </div>
@@ -229,7 +241,7 @@
                         placeholder="Indique el motivo de la cancelación...">{{ old('cancelled_reason') }}</x-wire-textarea>
                 </div>
                 <div class="flex justify-end gap-3">
-                    <x-wire-button outline gray x-on:click="$dispatch('close')">
+                    <x-wire-button outline gray @click="cancelModal = false">
                         Cerrar
                     </x-wire-button>
                     <x-wire-button type="submit" class="bg-red-600 hover:bg-red-700 focus:ring-red-500">
@@ -237,6 +249,8 @@
                     </x-wire-button>
                 </div>
             </form>
-        </x-wire-card>
-    </x-wire-modal>
+        </div>
+    </div>
+
+</div>{{-- /x-data --}}
 </x-admin-layout>
