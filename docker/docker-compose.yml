@@ -1,6 +1,5 @@
 services:
 
-  # ── Aplicación Citas ─────────────────────────────────────────────────────────
   citas-app:
     build:
       context: ..
@@ -9,7 +8,7 @@ services:
     restart: unless-stopped
     env_file: ../.env
     ports:
-      - "8081:80"          # nginx del host proxeará a 127.0.0.1:8081
+      - "8081:80"
     volumes:
       - citas_storage:/var/www/citas/storage/app
       - citas_logs:/var/www/citas/storage/logs
@@ -19,7 +18,6 @@ services:
       citas-db:
         condition: service_healthy
 
-  # ── Base de datos exclusiva para Citas ───────────────────────────────────────
   citas-db:
     image: mysql:8.0
     container_name: citas-db
