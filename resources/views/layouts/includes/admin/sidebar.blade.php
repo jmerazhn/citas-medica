@@ -94,7 +94,7 @@
 </div>
 
 <aside id="top-bar-sidebar"
-    class="fixed top-0 left-0 z-40 w-64 h-full transition-transform -translate-x-full sm:translate-x-0"
+    class="fixed top-0 left-0 z-40 w-64 h-full transition-transform -translate-x-full sm:translate-x-0 bg-white dark:bg-gray-900"
     aria-label="Sidebar">
     <div class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-default">
         <a href="https://flowbite.com/" class="flex items-center ps-2.5 mb-5">
