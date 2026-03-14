@@ -25,13 +25,17 @@ class PatientTable extends DataTableComponent
             Column::make('Id', 'id')
                 ->sortable(),
             Column::make('Nombres', 'nombres')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Apellidos', 'apellidos')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Teléfono', 'telefono')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Ciudad', 'ciudad')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Acciones')
                 ->label(
                     fn ($row) => view('admin.patients.actions', ['patient' => $row])

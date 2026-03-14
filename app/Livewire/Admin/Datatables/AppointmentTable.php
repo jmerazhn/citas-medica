@@ -12,7 +12,10 @@ class AppointmentTable extends DataTableComponent
     public function builder(): Builder
     {
         return Appointment::query()
-            ->with(['patient', 'doctor']);
+            ->with(['patient', 'doctor'])
+            ->join('patients', 'patients.id', '=', 'appointments.patient_id')
+            ->join('users', 'users.id', '=', 'appointments.doctor_id')
+            ->select('appointments.*');
     }
 
     public function configure(): void
@@ -26,9 +29,18 @@ class AppointmentTable extends DataTableComponent
             Column::make('Id', 'id')
                 ->sortable(),
             Column::make('Paciente', 'patient_id')
-                ->format(fn ($value, $row) => $row->patient?->full_name),
+                ->format(fn ($value, $row) => $row->patient?->full_name)
+                ->searchable(fn (Builder $query, string $search) =>
+                    $query->where(fn ($q) =>
+                        $q->whereRaw("CONCAT(patients.nombres, ' ', patients.apellidos) LIKE ?", ["%{$search}%"])
+                          ->orWhereRaw("CONCAT(patients.apellidos, ' ', patients.nombres) LIKE ?", ["%{$search}%"])
+                    )
+                ),
             Column::make('Doctor', 'doctor.name')
-                ->sortable(),
+                ->sortable()
+                ->searchable(fn (Builder $query, string $search) =>
+                    $query->orWhere('users.name', 'like', "%{$search}%")
+                ),
             Column::make('Fecha / Hora', 'scheduled_at')
                 ->sortable()
                 ->format(fn ($value) => $value->format('d/m/Y H:i')),
