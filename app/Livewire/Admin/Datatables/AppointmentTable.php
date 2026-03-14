@@ -25,9 +25,8 @@ class AppointmentTable extends DataTableComponent
         return [
             Column::make('Id', 'id')
                 ->sortable(),
-            Column::make('Paciente', 'patient.nombres')
-                ->sortable()
-                ->format(fn ($value, $row) => $row->patient?->full_name),
+            Column::make('Paciente')
+                ->label(fn ($row) => $row->patient?->full_name),
             Column::make('Doctor', 'doctor.name')
                 ->sortable(),
             Column::make('Fecha / Hora', 'scheduled_at')
