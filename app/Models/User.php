@@ -24,6 +24,11 @@ class User extends Authenticatable
 
     protected string $guard_name = 'web';
 
+    public function getDefaultGuardName(): string
+    {
+        return 'web';
+    }
+
     /**
      * The attributes that are mass assignable.
      *

@@ -41,7 +41,7 @@ class UserController extends Controller
 
         $user = User::create($data);
 
-        $user->assignRole(Role::findById($data['role_id'])->name);
+        $user->assignRole(Role::findById($data['role_id'], 'web')->name);
 
         Session::flash('swal', [
             'icon' => 'success',
@@ -87,7 +87,7 @@ class UserController extends Controller
             $user->save();
         }
 
-        $user->syncRoles([Role::findById($data['role_id'])->name]); 
+        $user->syncRoles([Role::findById($data['role_id'], 'web')->name]);
         Session::flash('swal', [
             'icon' => 'success',
             'title' => 'Usuario actualizado exitosamente',
