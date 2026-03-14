@@ -15,12 +15,11 @@ use App\Http\Controllers\Admin\Expediente\VacunaController;
 use App\Http\Controllers\Admin\Expediente\PatologiaPacienteController;
 use App\Http\Controllers\Admin\Expediente\EmbarazoController;
 use App\Http\Controllers\Admin\Expediente\PartoController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard — todos los usuarios autenticados
-Route::get('/', function () {
-    return view('admin.dashboard');
-})->name('dashboard');
+Route::get('/', DashboardController::class)->name('dashboard');
 
 // Roles — solo administradores
 Route::middleware('permission:ver-roles')->group(function () {
