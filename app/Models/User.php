@@ -74,6 +74,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['name'] = mb_strtoupper($value);
+    }
+
     public function doctorSchedules()
     {
         return $this->hasMany(DoctorSchedule::class);

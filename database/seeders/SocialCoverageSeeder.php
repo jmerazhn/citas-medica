@@ -9,13 +9,13 @@ class SocialCoverageSeeder extends Seeder
     public function run(): void
     {
         $coverages = [
-            'Ninguna / Particular',
-            'IHSS (Seguro Social)',
-            'Seguros Atlántida',
-            'Seguros FICOHSA',
-            'Mapfre Honduras',
-            'BANHCAFE Seguros',
-            'Crefisa Seguros',
+            'NINGUNA / PARTICULAR',
+            'IHSS (SEGURO SOCIAL)',
+            'SEGUROS ATLÁNTIDA',
+            'SEGUROS FICOHSA',
+            'MAPFRE HONDURAS',
+            'BANHCAFE SEGUROS',
+            'CREFISA SEGUROS',
         ];
 
         foreach ($coverages as $name) {

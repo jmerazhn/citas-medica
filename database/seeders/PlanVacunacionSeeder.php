@@ -10,10 +10,10 @@ class PlanVacunacionSeeder extends Seeder
     public function run(): void
     {
         $planes = [
-            ['nombre' => 'Esquema Nacional Honduras', 'descripcion' => 'Esquema oficial de vacunación del Ministerio de Salud de Honduras.'],
-            ['nombre' => 'OPS/OMS Recomendado', 'descripcion' => 'Esquema de vacunación recomendado por la Organización Panamericana de la Salud.'],
-            ['nombre' => 'Esquema Privado', 'descripcion' => 'Vacunas adicionales recomendadas fuera del esquema nacional.'],
-            ['nombre' => 'Esquema de Recuperación', 'descripcion' => 'Para pacientes con vacunas atrasadas o esquema incompleto.'],
+            ['nombre' => 'ESQUEMA NACIONAL HONDURAS', 'descripcion' => 'ESQUEMA OFICIAL DE VACUNACIÓN DEL MINISTERIO DE SALUD DE HONDURAS.'],
+            ['nombre' => 'OPS/OMS RECOMENDADO', 'descripcion' => 'ESQUEMA DE VACUNACIÓN RECOMENDADO POR LA ORGANIZACIÓN PANAMERICANA DE LA SALUD.'],
+            ['nombre' => 'ESQUEMA PRIVADO', 'descripcion' => 'VACUNAS ADICIONALES RECOMENDADAS FUERA DEL ESQUEMA NACIONAL.'],
+            ['nombre' => 'ESQUEMA DE RECUPERACIÓN', 'descripcion' => 'PARA PACIENTES CON VACUNAS ATRASADAS O ESQUEMA INCOMPLETO.'],
         ];
 
         foreach ($planes as $plan) {

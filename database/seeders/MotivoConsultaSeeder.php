@@ -10,21 +10,21 @@ class MotivoConsultaSeeder extends Seeder
     public function run(): void
     {
         $motivos = [
-            'Control de niño sano',
-            'Fiebre',
-            'Tos y/o resfriado',
-            'Diarrea',
-            'Vómitos',
-            'Dolor de oído',
-            'Dolor abdominal',
-            'Erupción cutánea / sarpullido',
-            'Dificultad respiratoria',
-            'Vacunación',
-            'Consulta de seguimiento',
-            'Traumatismo / lesión',
-            'Alergias',
-            'Revisión de resultados de laboratorio',
-            'Otro',
+            'CONTROL DE NIÑO SANO',
+            'FIEBRE',
+            'TOS Y/O RESFRIADO',
+            'DIARREA',
+            'VÓMITOS',
+            'DOLOR DE OÍDO',
+            'DOLOR ABDOMINAL',
+            'ERUPCIÓN CUTÁNEA / SARPULLIDO',
+            'DIFICULTAD RESPIRATORIA',
+            'VACUNACIÓN',
+            'CONSULTA DE SEGUIMIENTO',
+            'TRAUMATISMO / LESIÓN',
+            'ALERGIAS',
+            'REVISIÓN DE RESULTADOS DE LABORATORIO',
+            'OTRO',
         ];
 
         foreach ($motivos as $nombre) {
