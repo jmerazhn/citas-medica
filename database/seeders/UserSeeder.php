@@ -24,8 +24,8 @@ class UserSeeder extends Seeder
             ]
         );
 
-        if (!$user->hasRole('Doctor')) {
-            $user->assignRole('Doctor');
+        if (!$user->hasRole('Administrador')) {
+            $user->syncRoles('Administrador');
         }
     }
 }
