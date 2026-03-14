@@ -1,16 +1,16 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-bullseye
 
 # ── Sistema base ──────────────────────────────────────────────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    nginx \
+# Instalar Node.js 20 LTS desde NodeSource (bullseye apt solo tiene Node 12)
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends \
     nodejs \
-    npm \
+    nginx \
     supervisor \
     git \
     zip \
     unzip \
-    curl \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Extensiones PHP ───────────────────────────────────────────────────────────
-ENV TMPDIR=/var/tmp
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install \
       pdo \
