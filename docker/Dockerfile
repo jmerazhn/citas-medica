@@ -48,6 +48,13 @@ RUN npm ci
 # ── Código fuente completo ────────────────────────────────────────────────────
 COPY . .
 
+# ── Crear directorios necesarios para Laravel ─────────────────────────────────
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache
+
 # ── Finalizar instalación PHP ─────────────────────────────────────────────────
 RUN composer dump-autoload --optimize
 
