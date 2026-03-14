@@ -72,6 +72,11 @@
     ];
 @endphp
 
+{{-- Backdrop para cerrar el sidebar en mobile al tocar fuera --}}
+<div class="fixed inset-0 z-30 bg-black/50 sm:hidden hidden" id="sidebar-backdrop"
+    onclick="document.getElementById('top-bar-sidebar').__x?.$data && document.dispatchEvent(new Event('close-sidebar'))">
+</div>
+
 <aside id="top-bar-sidebar"
     class="fixed top-0 left-0 z-40 w-64 h-full transition-transform -translate-x-full sm:translate-x-0"
     aria-label="Sidebar">

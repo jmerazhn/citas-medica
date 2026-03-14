@@ -9,10 +9,10 @@
 
         {{-- Header --}}
         <x-wire-card class="mb-6">
-            <div class="flex justify-between items-start">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">Atención — {{ $appointment->patient->full_name }}</h2>
-                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Atención — {{ $appointment->patient->full_name }}</h2>
+                    <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600 mt-1">
                         <span><i class="fa-solid fa-calendar fa-fw"></i> {{ $appointment->scheduled_at->format('d/m/Y H:i') }}</span>
                         <span><i class="fa-solid fa-user-doctor fa-fw"></i> {{ $appointment->doctor->name }}</span>
                         @if ($appointment->motivoConsulta)
@@ -20,14 +20,14 @@
                         @endif
                     </div>
                 </div>
-                <div class="flex space-x-3">
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.appointments.show', $appointment) }}">Volver</x-wire-button>
                     <x-wire-button type="submit" primary><i class="fa-solid fa-check"></i> Guardar</x-wire-button>
                 </div>
             </div>
         </x-wire-card>
 
-        <div class="grid lg:grid-cols-2 gap-6">
+        <div class="grid md:grid-cols-2 gap-6">
 
             {{-- Columna izquierda --}}
             <div class="space-y-6">
@@ -49,7 +49,7 @@
                 {{-- Estado de crecimiento --}}
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-3">Estado de Crecimiento</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid sm:grid-cols-2 gap-4">
                         <x-wire-input label="Peso" name="peso" value="{{ old('peso') }}" placeholder="ej. 12.5 kg" />
                         <x-wire-input label="Altura / Talla" name="altura" value="{{ old('altura') }}" placeholder="ej. 85 cm" />
                         <x-wire-input label="P.C. (Perímetro Cefálico)" name="pc" value="{{ old('pc') }}" placeholder="ej. 46 cm" />
@@ -60,7 +60,7 @@
                 {{-- Signos Vitales --}}
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-3">Signos Vitales</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid sm:grid-cols-2 gap-4">
                         <x-wire-input label="Temperatura" name="temperatura" value="{{ old('temperatura') }}" placeholder="ej. 37.2 °C" />
                         <x-wire-input label="F.C. (Frec. Cardíaca)" name="fc" value="{{ old('fc') }}" placeholder="ej. 90 lpm" />
                         <x-wire-input label="F.R. (Frec. Respiratoria)" name="fr" value="{{ old('fr') }}" placeholder="ej. 22 rpm" />

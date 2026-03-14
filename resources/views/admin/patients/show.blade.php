@@ -6,10 +6,10 @@
 
     {{-- Header --}}
     <x-wire-card class="mb-6">
-        <div class="flex justify-between items-start">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">{{ $patient->full_name }}</h2>
-                <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">{{ $patient->full_name }}</h2>
+                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600">
                     @if ($patient->fecha_nacimiento)
                         <span><i class="fa-solid fa-calendar-days fa-fw"></i> {{ $patient->fecha_nacimiento->format('d/m/Y') }} ({{ $patient->fecha_nacimiento->age }} años)</span>
                     @endif
@@ -49,7 +49,7 @@
                 <li class="me-2">
                     <button @click="tab = '{{ $id }}'"
                         :class="tab === '{{ $id }}' ? 'text-blue-600 border-blue-600 border-b-2 active' : 'hover:text-gray-600 hover:border-gray-300'"
-                        class="inline-flex items-center justify-center gap-2 p-4 rounded-t-lg">
+                        class="inline-flex items-center justify-center gap-1 sm:gap-2 p-2 sm:p-4 text-xs sm:text-sm rounded-t-lg">
                         <i class="fa-solid {{ $icon }}"></i> {{ $label }}
                     </button>
                 </li>
@@ -272,7 +272,7 @@
                         </div>
                         @if ($vacuna->notas) <p class="text-sm text-gray-500 mt-1">{{ $vacuna->notas }}</p> @endif
                     </div>
-                    <div class="flex items-center space-x-2 ml-4">
+                    <div class="flex items-center gap-2 ml-2 shrink-0">
                         <x-wire-button href="{{ route('admin.vacunas.edit', $vacuna) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
                             <i class="fa fa-pen-to-square"></i>
                         </x-wire-button>
@@ -312,7 +312,7 @@
                         </div>
                         @if ($pp->notas) <p class="text-sm text-gray-500">{{ $pp->notas }}</p> @endif
                     </div>
-                    <div class="flex items-center space-x-2 ml-4">
+                    <div class="flex items-center gap-2 ml-2 shrink-0">
                         <x-wire-button href="{{ route('admin.patologias.edit', $pp) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
                             <i class="fa fa-pen-to-square"></i>
                         </x-wire-button>
@@ -337,7 +337,7 @@
                 $parto    = $patient->partos->first();
             @endphp
 
-            <div class="grid lg:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-2 gap-6">
 
                 {{-- Embarazo --}}
                 <x-wire-card>
@@ -367,13 +367,13 @@
                     @if ($embarazo)
                         <dl class="space-y-2 text-sm">
                             @if ($embarazo->numero_embarazo)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-40">No. de Gestación</dt><dd class="text-gray-900">{{ $embarazo->numero_embarazo }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-32 shrink-0">No. de Gestación</dt><dd class="text-gray-900">{{ $embarazo->numero_embarazo }}</dd></div>
                             @endif
                             @if ($embarazo->obstetra)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-40">Obstetra</dt><dd class="text-gray-900">{{ $embarazo->obstetra }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-32 shrink-0">Obstetra</dt><dd class="text-gray-900">{{ $embarazo->obstetra }}</dd></div>
                             @endif
                             @if ($embarazo->semanas_gestacion)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-40">Duración</dt><dd class="text-gray-900">{{ $embarazo->semanas_gestacion }} semanas</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-32 shrink-0">Duración</dt><dd class="text-gray-900">{{ $embarazo->semanas_gestacion }} semanas</dd></div>
                             @endif
                             @php
                                 $complicaciones = array_filter([
@@ -383,11 +383,11 @@
                                 ]);
                             @endphp
                             <div class="flex gap-2">
-                                <dt class="text-gray-500 w-40">Complicaciones</dt>
+                                <dt class="text-gray-500 w-32 shrink-0">Complicaciones</dt>
                                 <dd class="text-gray-900">{{ $complicaciones ? implode(', ', $complicaciones) : 'Ninguna' }}</dd>
                             </div>
-                            <div class="flex gap-2"><dt class="text-gray-500 w-40">Infecciones</dt><dd class="text-gray-900">{{ $embarazo->infecciones ? 'Sí' : 'No' }}</dd></div>
-                            <div class="flex gap-2"><dt class="text-gray-500 w-40">Asma</dt><dd class="text-gray-900">{{ $embarazo->asma ? 'Sí' : 'No' }}</dd></div>
+                            <div class="flex gap-2"><dt class="text-gray-500 w-32 shrink-0">Infecciones</dt><dd class="text-gray-900">{{ $embarazo->infecciones ? 'Sí' : 'No' }}</dd></div>
+                            <div class="flex gap-2"><dt class="text-gray-500 w-32 shrink-0">Asma</dt><dd class="text-gray-900">{{ $embarazo->asma ? 'Sí' : 'No' }}</dd></div>
                             @if ($embarazo->medicacion)
                                 <div><dt class="text-gray-500 mb-1">Medicación</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $embarazo->medicacion }}</dd></div>
                             @endif
@@ -435,29 +435,29 @@
                         {{-- Datos del parto --}}
                         <dl class="space-y-2 text-sm mb-4">
                             @if ($parto->fecha_parto)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Fecha</dt><dd class="text-gray-900">{{ $parto->fecha_parto->format('d/m/Y') }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Fecha</dt><dd class="text-gray-900">{{ $parto->fecha_parto->format('d/m/Y') }}</dd></div>
                             @endif
                             @if ($parto->lugar)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Lugar</dt><dd class="text-gray-900">{{ $parto->lugar }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Lugar</dt><dd class="text-gray-900">{{ $parto->lugar }}</dd></div>
                             @endif
-                            <div class="flex gap-2"><dt class="text-gray-500 w-36">Cesárea</dt><dd class="text-gray-900">{{ $parto->cesarea ? 'Sí' : 'No' }}</dd></div>
+                            <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Cesárea</dt><dd class="text-gray-900">{{ $parto->cesarea ? 'Sí' : 'No' }}</dd></div>
                             @if ($parto->cesarea && $parto->motivo_cesarea)
                                 <div><dt class="text-gray-500 mb-1">Motivo cesárea</dt><dd class="text-gray-700">{{ $parto->motivo_cesarea }}</dd></div>
                             @endif
                             @if ($parto->posicion)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Posición</dt><dd class="text-gray-900">{{ $posiciones[$parto->posicion] ?? $parto->posicion }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Posición</dt><dd class="text-gray-900">{{ $posiciones[$parto->posicion] ?? $parto->posicion }}</dd></div>
                             @endif
                             @if ($parto->parto_tipo)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Parto</dt><dd class="text-gray-900">{{ $partoTipos[$parto->parto_tipo] ?? $parto->parto_tipo }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Parto</dt><dd class="text-gray-900">{{ $partoTipos[$parto->parto_tipo] ?? $parto->parto_tipo }}</dd></div>
                             @endif
                             @if ($parto->anestesia)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Anestesia</dt><dd class="text-gray-900">{{ $anestesias[$parto->anestesia] ?? $parto->anestesia }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Anestesia</dt><dd class="text-gray-900">{{ $anestesias[$parto->anestesia] ?? $parto->anestesia }}</dd></div>
                             @endif
                             @if ($parto->apgar)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Apgar</dt><dd class="text-gray-900">{{ $parto->apgar }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Apgar</dt><dd class="text-gray-900">{{ $parto->apgar }}</dd></div>
                             @endif
                             @if ($parto->parto_gamma)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Parto Gamma</dt><dd class="text-gray-900">{{ $parto->parto_gamma }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Parto Gamma</dt><dd class="text-gray-900">{{ $parto->parto_gamma }}</dd></div>
                             @endif
                             @if ($parto->observaciones)
                                 <div><dt class="text-gray-500 mb-1">Observaciones</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $parto->observaciones }}</dd></div>
@@ -469,16 +469,16 @@
                         <p class="text-xs font-semibold text-gray-500 uppercase mb-2 border-t pt-3">Recién Nacido</p>
                         <dl class="space-y-2 text-sm">
                             @if ($parto->peso_rn)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Peso</dt><dd class="text-gray-900">{{ $parto->peso_rn }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Peso</dt><dd class="text-gray-900">{{ $parto->peso_rn }}</dd></div>
                             @endif
                             @if ($parto->talla_rn)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Altura</dt><dd class="text-gray-900">{{ $parto->talla_rn }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Altura</dt><dd class="text-gray-900">{{ $parto->talla_rn }}</dd></div>
                             @endif
                             @if ($parto->pc_rn)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">P.C.</dt><dd class="text-gray-900">{{ $parto->pc_rn }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">P.C.</dt><dd class="text-gray-900">{{ $parto->pc_rn }}</dd></div>
                             @endif
                             @if ($parto->ombligo_dias)
-                                <div class="flex gap-2"><dt class="text-gray-500 w-36">Ombligo</dt><dd class="text-gray-900">{{ $parto->ombligo_dias }}</dd></div>
+                                <div class="flex gap-2"><dt class="text-gray-500 w-28 shrink-0">Ombligo</dt><dd class="text-gray-900">{{ $parto->ombligo_dias }}</dd></div>
                             @endif
                             @if ($parto->observaciones_rn)
                                 <div><dt class="text-gray-500 mb-1">Observaciones RN</dt><dd class="text-gray-700 whitespace-pre-wrap">{{ $parto->observaciones_rn }}</dd></div>

@@ -19,9 +19,9 @@
         @method('PUT')
 
         <x-wire-card class="mb-4">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <h2 class="text-lg font-semibold text-gray-800">Editar Cita #{{ $appointment->id }}</h2>
-                <div class="flex space-x-3">
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.appointments.show', $appointment) }}">
                         Volver
                     </x-wire-button>

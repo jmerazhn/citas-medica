@@ -72,36 +72,36 @@
         </div>
     </x-wire-card>
 
-    <div class="grid lg:grid-cols-2 gap-4">
+    <div class="grid md:grid-cols-2 gap-4">
         <x-wire-card>
             <h3 class="font-semibold text-gray-700 mb-4">Información de la Cita</h3>
             <dl class="space-y-3 text-sm">
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Paciente:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Paciente:</dt>
                     <dd class="text-gray-900">{{ $appointment->patient?->full_name }}</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Doctor:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Doctor:</dt>
                     <dd class="text-gray-900">{{ $appointment->doctor->name }}</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Fecha:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Fecha:</dt>
                     <dd class="text-gray-900">{{ $appointment->scheduled_at->format('d/m/Y') }}</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Hora inicio:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Hora inicio:</dt>
                     <dd class="text-gray-900">{{ $appointment->scheduled_at->format('H:i') }}</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Hora fin:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Hora fin:</dt>
                     <dd class="text-gray-900">{{ $appointment->end_time->format('H:i') }}</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Duración:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Duración:</dt>
                     <dd class="text-gray-900">{{ $appointment->duration }} minutos</dd>
                 </div>
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Motivo:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Motivo:</dt>
                     <dd class="text-gray-900">{{ $appointment->motivoConsulta?->nombre ?? $appointment->reason ?? '—' }}</dd>
                 </div>
             </dl>
@@ -120,12 +120,12 @@
                         <dd class="text-red-700">{{ $appointment->cancelled_reason ?? '—' }}</dd>
                     </div>
                     <div class="flex gap-2">
-                        <dt class="font-medium text-gray-500 w-36">Cancelada el:</dt>
+                        <dt class="font-medium text-gray-500 w-28 shrink-0">Cancelada el:</dt>
                         <dd class="text-gray-900">{{ $appointment->cancelled_at?->format('d/m/Y H:i') ?? '—' }}</dd>
                     </div>
                 @endif
                 <div class="flex gap-2">
-                    <dt class="font-medium text-gray-500 w-36">Creada el:</dt>
+                    <dt class="font-medium text-gray-500 w-28 shrink-0">Creada el:</dt>
                     <dd class="text-gray-900">{{ $appointment->created_at->format('d/m/Y H:i') }}</dd>
                 </div>
             </dl>
@@ -138,10 +138,10 @@
         <div class="mt-4 space-y-4">
 
             {{-- Crecimiento y Signos Vitales --}}
-            <div class="grid lg:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 gap-4">
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-3">Estado de Crecimiento</h3>
-                    <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <dl class="grid grid-cols-2 gap-x-2 gap-y-2 text-sm">
                         <div><dt class="text-gray-500">Peso</dt><dd class="text-gray-900">{{ $a->peso ?? '—' }}</dd></div>
                         <div><dt class="text-gray-500">Altura / Talla</dt><dd class="text-gray-900">{{ $a->altura ?? '—' }}</dd></div>
                         <div><dt class="text-gray-500">P.C.</dt><dd class="text-gray-900">{{ $a->pc ?? '—' }}</dd></div>
@@ -150,7 +150,7 @@
                 </x-wire-card>
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-3">Signos Vitales</h3>
-                    <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <dl class="grid grid-cols-2 gap-x-2 gap-y-2 text-sm">
                         <div><dt class="text-gray-500">Temperatura</dt><dd class="text-gray-900">{{ $a->temperatura ?? '—' }}</dd></div>
                         <div><dt class="text-gray-500">F.C.</dt><dd class="text-gray-900">{{ $a->fc ?? '—' }}</dd></div>
                         <div><dt class="text-gray-500">F.R.</dt><dd class="text-gray-900">{{ $a->fr ?? '—' }}</dd></div>
@@ -168,7 +168,7 @@
             </div>
 
             {{-- Clínico --}}
-            <div class="grid lg:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 gap-4">
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-2">Sintomatología</h3>
                     <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->sintomatologia ?? '—' }}</p>
@@ -179,7 +179,7 @@
                 </x-wire-card>
             </div>
 
-            <div class="grid lg:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 gap-4">
                 <x-wire-card>
                     <h3 class="font-semibold text-gray-700 mb-2">Diagnóstico Posible</h3>
                     <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $a->diagnostico_posible ?? '—' }}</p>
@@ -232,7 +232,7 @@
 
         <div class="fixed inset-0 bg-black/50" @click="cancelModal = false"></div>
 
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10 p-6">
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10 p-4 sm:p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Cancelar Cita</h3>
                 <button @click="cancelModal = false" class="text-gray-400 hover:text-gray-600">

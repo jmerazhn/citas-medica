@@ -8,16 +8,16 @@
         @method('PUT')
 
         <x-wire-card class="mb-6">
-            <div class="lg:flex lg:justify-between lg:items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div>
-                    <p class="text-2xl font-bold text-gray-800">{{ $patient->full_name }}</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-800">{{ $patient->full_name }}</p>
                     @if ($patient->telefono)
                         <p class="text-sm text-gray-500 mt-1">
                             <i class="fa-solid fa-phone me-1"></i>{{ $patient->telefono }}
                         </p>
                     @endif
                 </div>
-                <div class="flex space-x-3 mt-4 lg:mt-0">
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.patients.index') }}">
                         Volver
                     </x-wire-button>
@@ -29,7 +29,7 @@
         </x-wire-card>
 
         <x-wire-card>
-            <div class="grid lg:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 gap-4">
 
                 <x-wire-input
                     label="Nombres"
@@ -105,7 +105,7 @@
                     @endforeach
                 </x-wire-native-select>
 
-                <div class="lg:col-span-2">
+                <div class="md:col-span-2">
                     <x-wire-textarea
                         label="Notas Importantes"
                         name="notas_importantes">

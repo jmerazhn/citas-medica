@@ -1,4 +1,4 @@
-<div class="grid lg:grid-cols-2 gap-4">
+<div class="grid md:grid-cols-2 gap-4">
     <div>
         <x-searchable-select
             name="doctor_id"
@@ -26,7 +26,7 @@
         @enderror
     </div>
 
-    <div class="lg:col-span-2">
+    <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-1">Hora disponible</label>
 
         @if ($doctorId && $date)

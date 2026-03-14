@@ -18,9 +18,9 @@
         @csrf
 
         <x-wire-card class="mb-4">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <h2 class="text-lg font-semibold text-gray-800">Nueva Cita</h2>
-                <div class="flex space-x-3">
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.appointments.index') }}">
                         Volver
                     </x-wire-button>

@@ -17,7 +17,7 @@
             @csrf
             @method('PUT')
             <div class="space-y-4">
-                <div class="grid lg:grid-cols-2 gap-4">
+                <div class="grid md:grid-cols-2 gap-4">
                     <x-wire-input label="Nombre Completo" name="name"
                         placeholder="Ingresa el nombre completo del usuario" required :value="old('name', $user->name)" />
 

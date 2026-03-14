@@ -9,16 +9,16 @@
         @method('PUT')
 
         <x-wire-card class="mb-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-gray-800">Datos del Parto — {{ $patient->full_name }}</h2>
-                <div class="flex space-x-3">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800">Datos del Parto — {{ $patient->full_name }}</h2>
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.patients.show', $patient) }}">Volver</x-wire-button>
                     <x-wire-button type="submit" primary><i class="fa-solid fa-check"></i> Actualizar</x-wire-button>
                 </div>
             </div>
         </x-wire-card>
 
-        <div class="grid lg:grid-cols-2 gap-6"
+        <div class="grid md:grid-cols-2 gap-6"
              x-data="{ cesarea: {{ old('cesarea', $parto->cesarea) ? 'true' : 'false' }} }">
 
             {{-- Datos del Parto --}}

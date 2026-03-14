@@ -8,9 +8,9 @@
         @csrf
 
         <x-wire-card class="mb-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-gray-800">Datos del Embarazo — {{ $patient->full_name }}</h2>
-                <div class="flex space-x-3">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800">Datos del Embarazo — {{ $patient->full_name }}</h2>
+                <div class="flex gap-2">
                     <x-wire-button outline gray href="{{ route('admin.patients.show', $patient) }}">Volver</x-wire-button>
                     <x-wire-button type="submit" primary><i class="fa-solid fa-check"></i> Guardar</x-wire-button>
                 </div>
@@ -18,7 +18,7 @@
         </x-wire-card>
 
         <x-wire-card>
-            <div class="grid lg:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-2 gap-4">
 
                 <x-wire-input label="No. de Gestación" name="numero_embarazo" type="number" min="1" value="{{ old('numero_embarazo') }}" />
                 <x-wire-input label="Obstetra" name="obstetra" value="{{ old('obstetra') }}" placeholder="Nombre del obstetra" />
@@ -73,10 +73,10 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-2">
+                <div class="md:col-span-2">
                     <x-wire-textarea label="Medicación" name="medicacion" rows="3" placeholder="Medicamentos tomados durante el embarazo...">{{ old('medicacion') }}</x-wire-textarea>
                 </div>
-                <div class="lg:col-span-2">
+                <div class="md:col-span-2">
                     <x-wire-textarea label="Observaciones" name="observaciones" rows="3" placeholder="Observaciones adicionales...">{{ old('observaciones') }}</x-wire-textarea>
                 </div>
 
