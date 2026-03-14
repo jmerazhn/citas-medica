@@ -27,11 +27,13 @@
                     @endif
                 </div>
             </div>
+            @can('gestionar-pacientes')
             <div class="flex space-x-2">
                 <x-wire-button outline gray href="{{ route('admin.patients.edit', $patient) }}">
                     <i class="fa-solid fa-pen-to-square"></i> Editar
                 </x-wire-button>
             </div>
+            @endcan
         </div>
     </x-wire-card>
 
@@ -221,17 +223,20 @@
                         </div>
                         @endif
 
+                        @can('completar-citas')
                         <div class="pt-1 flex justify-end">
                             <a href="{{ route('admin.atenciones.edit', $a) }}"
                                class="text-xs text-purple-600 hover:underline">
                                 <i class="fa-solid fa-pen-to-square fa-fw"></i> Editar atención
                             </a>
                         </div>
+                        @endcan
 
                     @else
                         <p class="text-sm text-gray-400 italic text-center py-2">
                             Esta cita no tiene atención registrada.
                         </p>
+                        @can('completar-citas')
                         @if (in_array($appt->status, ['confirmed', 'completed']))
                         <div class="flex justify-center">
                             <a href="{{ route('admin.appointments.atencion.create', $appt) }}"
@@ -240,6 +245,7 @@
                             </a>
                         </div>
                         @endif
+                        @endcan
                     @endif
                 </div>
             </div>
@@ -250,11 +256,13 @@
 
         {{-- Vacunas --}}
         <div x-show="tab === '#vacunas'">
+            @can('gestionar-expediente')
             <div class="flex justify-end mb-3">
                 <x-wire-button blue href="{{ route('admin.patients.vacunas.create', $patient) }}">
                     <i class="fa fa-plus"></i> Registrar Vacuna
                 </x-wire-button>
             </div>
+            @endcan
             @forelse ($patient->vacunas as $vacuna)
             <x-wire-card class="mb-3">
                 <div class="flex justify-between items-start">
@@ -272,6 +280,7 @@
                         </div>
                         @if ($vacuna->notas) <p class="text-sm text-gray-500 mt-1">{{ $vacuna->notas }}</p> @endif
                     </div>
+                    @can('gestionar-expediente')
                     <div class="flex items-center gap-2 ml-2 shrink-0">
                         <x-wire-button href="{{ route('admin.vacunas.edit', $vacuna) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
                             <i class="fa fa-pen-to-square"></i>
@@ -283,6 +292,7 @@
                             </x-wire-button>
                         </form>
                     </div>
+                    @endcan
                 </div>
             </x-wire-card>
             @empty
@@ -292,11 +302,13 @@
 
         {{-- Patologías --}}
         <div x-show="tab === '#patologias'">
+            @can('gestionar-expediente')
             <div class="flex justify-end mb-3">
                 <x-wire-button blue href="{{ route('admin.patients.patologias.create', $patient) }}">
                     <i class="fa fa-plus"></i> Registrar Patología
                 </x-wire-button>
             </div>
+            @endcan
             @forelse ($patient->patologias as $pp)
             <x-wire-card class="mb-3">
                 <div class="flex justify-between items-start">
@@ -312,6 +324,7 @@
                         </div>
                         @if ($pp->notas) <p class="text-sm text-gray-500">{{ $pp->notas }}</p> @endif
                     </div>
+                    @can('gestionar-expediente')
                     <div class="flex items-center gap-2 ml-2 shrink-0">
                         <x-wire-button href="{{ route('admin.patologias.edit', $pp) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
                             <i class="fa fa-pen-to-square"></i>
@@ -323,6 +336,7 @@
                             </x-wire-button>
                         </form>
                     </div>
+                    @endcan
                 </div>
             </x-wire-card>
             @empty
@@ -345,6 +359,7 @@
                         <h3 class="font-semibold text-gray-700">
                             <i class="fa-solid fa-person-pregnant fa-fw text-pink-400"></i> Datos del Embarazo
                         </h3>
+                        @can('gestionar-expediente')
                         @if ($embarazo)
                             <div class="flex gap-2">
                                 <x-wire-button href="{{ route('admin.embarazos.edit', $embarazo) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
@@ -362,6 +377,7 @@
                                 <i class="fa fa-plus"></i> Registrar
                             </x-wire-button>
                         @endif
+                        @endcan
                     </div>
 
                     @if ($embarazo)
@@ -406,6 +422,7 @@
                         <h3 class="font-semibold text-gray-700">
                             <i class="fa-solid fa-baby fa-fw text-blue-400"></i> Datos del Parto / Nacimiento
                         </h3>
+                        @can('gestionar-expediente')
                         @if ($parto)
                             <div class="flex gap-2">
                                 <x-wire-button href="{{ route('admin.partos.edit', $parto) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
@@ -423,6 +440,7 @@
                                 <i class="fa fa-plus"></i> Registrar
                             </x-wire-button>
                         @endif
+                        @endcan
                     </div>
 
                     @if ($parto)

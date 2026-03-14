@@ -47,5 +47,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'No tienes permiso para realizar esta acción.'], 403);
+            }
+            $tenantId = tenancy()->initialized ? tenant('id') : null;
+            $redirect = $tenantId
+                ? redirect()->route('admin.dashboard', ['tenant' => $tenantId])
+                : redirect('/');
+            return $redirect->with('swal', [
+                'icon' => 'error',
+                'title' => 'Acceso denegado',
+                'text' => 'No tienes permiso para acceder a esa sección.',
+            ]);
+        });
     })->create();

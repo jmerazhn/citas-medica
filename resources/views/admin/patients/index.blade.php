@@ -11,9 +11,11 @@ title="Pacientes"
 ]">
 
     <x-slot name="action">
+        @can('gestionar-pacientes')
         <x-wire-button blue href="{{ route('admin.patients.create') }}">
             <i class="fa fa-plus"></i> Nuevo Paciente
         </x-wire-button>
+        @endcan
     </x-slot>
 
     @livewire('admin.datatables.patient-table')

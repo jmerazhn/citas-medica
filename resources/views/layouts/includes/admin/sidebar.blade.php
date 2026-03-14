@@ -13,19 +13,22 @@
             'name' => 'Roles y Permisos',
             'icon' => 'fa-solid fa-shield-halved',
             'href' => route('admin.roles.index'),
-            'active' => request()->routeIs('admin.roles.*')
+            'active' => request()->routeIs('admin.roles.*'),
+            'permission' => 'ver-roles',
         ],
         [
             'name' => 'Usuarios',
             'icon' => 'fa-solid fa-users',
             'href' => route('admin.users.index'),
-            'active' => request()->routeIs('admin.users.*')
+            'active' => request()->routeIs('admin.users.*'),
+            'permission' => 'ver-usuarios',
         ],
         [
             'name' => 'Pacientes',
             'icon' => 'fa-solid fa-user-injured',
             'href' => route('admin.patients.index'),
-            'active' => request()->routeIs('admin.patients.*')
+            'active' => request()->routeIs('admin.patients.*'),
+            'permission' => 'ver-pacientes',
         ],
         [
             'header' => 'Citas',
@@ -35,6 +38,14 @@
             'icon' => 'fa-solid fa-calendar-check',
             'href' => route('admin.appointments.index'),
             'active' => request()->routeIs('admin.appointments.*'),
+            'permission' => 'ver-citas',
+        ],
+        [
+            'name' => 'Mi Horario',
+            'icon' => 'fa-solid fa-clock',
+            'href' => route('admin.doctors.schedules.index', auth()->id()),
+            'active' => request()->routeIs('admin.doctors.schedules.*'),
+            'permission' => 'gestionar-horarios',
         ],
         [
             'header' => 'Catálogos',
@@ -44,30 +55,35 @@
             'icon' => 'fa-solid fa-list-ul',
             'href' => route('admin.catalogos.motivos-consulta.index'),
             'active' => request()->routeIs('admin.catalogos.motivos-consulta.*'),
+            'permission' => 'ver-catalogos',
         ],
         [
             'name' => 'Planes de Vacunación',
             'icon' => 'fa-solid fa-syringe',
             'href' => route('admin.catalogos.planes-vacunacion.index'),
             'active' => request()->routeIs('admin.catalogos.planes-vacunacion.*'),
+            'permission' => 'ver-catalogos',
         ],
         [
             'name' => 'Patologías',
             'icon' => 'fa-solid fa-notes-medical',
             'href' => route('admin.catalogos.patologias.index'),
             'active' => request()->routeIs('admin.catalogos.patologias.*'),
+            'permission' => 'ver-catalogos',
         ],
         [
             'name' => 'Coberturas Sociales',
             'icon' => 'fa-solid fa-shield-halved',
             'href' => route('admin.catalogos.coberturas-sociales.index'),
             'active' => request()->routeIs('admin.catalogos.coberturas-sociales.*'),
+            'permission' => 'ver-catalogos',
         ],
         [
             'name' => 'Tablas de Crecimiento',
             'icon' => 'fa-solid fa-chart-line',
             'href' => route('admin.catalogos.tablas-crecimiento.index'),
             'active' => request()->routeIs('admin.catalogos.tablas-crecimiento.*'),
+            'permission' => 'ver-catalogos',
         ],
     ];
 @endphp
@@ -87,6 +103,9 @@
         </a>
         <ul class="space-y-2 font-medium">
             @foreach ($links as $link)
+                @if (isset($link['permission']) && ! auth()->user()?->can($link['permission']))
+                    @continue
+                @endif
                 <li>
                     @isset($link['header'])
                         <div class="px-2 py-2 text-xs font-semibold text-gray-500 uppercase">

@@ -3,6 +3,7 @@
         <i class="fa fa-eye"></i>
     </x-wire-button>
 
+    @can('gestionar-pacientes')
     <x-wire-button href="{{ route('admin.patients.edit', $patient) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
         <i class="fa fa-pen-to-square"></i>
     </x-wire-button>
@@ -15,4 +16,5 @@
             <i class="fa fa-trash"></i>
         </x-wire-button>
     </form>
+    @endcan
 </div>

@@ -3,10 +3,13 @@
         <i class="fa fa-eye"></i>
     </x-wire-button>
 
+    @can('gestionar-citas')
     <x-wire-button href="{{ route('admin.appointments.edit', $appointment) }}" xs class="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
         <i class="fa fa-pen-to-square"></i>
     </x-wire-button>
+    @endcan
 
+    @can('confirmar-citas')
     @if ($appointment->status === 'pending')
         <form method="POST" action="{{ route('admin.appointments.confirm', $appointment) }}" class="inline">
             @csrf
@@ -16,4 +19,5 @@
             </x-wire-button>
         </form>
     @endif
+    @endcan
 </div>

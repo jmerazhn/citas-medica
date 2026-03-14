@@ -16,6 +16,7 @@ class TenantDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([RoleSeeder::class]);
+        $this->call([PermissionSeeder::class]);
 
         // Limpiar caché de Spatie para que UserSeeder encuentre los roles recién creados
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

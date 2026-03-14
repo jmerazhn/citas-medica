@@ -25,10 +25,13 @@
                 <x-wire-button outline gray href="{{ route('admin.appointments.index') }}">
                     Volver
                 </x-wire-button>
+                @can('gestionar-citas')
                 <x-wire-button outline blue href="{{ route('admin.appointments.edit', $appointment) }}">
                     <i class="fa fa-pen-to-square"></i> Editar
                 </x-wire-button>
+                @endcan
 
+                @can('completar-citas')
                 @if (in_array($appointment->status, ['confirmed', 'completed']))
                     @if ($appointment->atencion)
                         <x-wire-button outline href="{{ route('admin.atenciones.edit', $appointment->atencion) }}"
@@ -42,7 +45,9 @@
                         </x-wire-button>
                     @endif
                 @endif
+                @endcan
 
+                @can('confirmar-citas')
                 @if ($appointment->status === 'pending')
                     <form method="POST" action="{{ route('admin.appointments.confirm', $appointment) }}" class="inline">
                         @csrf @method('PATCH')
@@ -51,7 +56,9 @@
                         </x-wire-button>
                     </form>
                 @endif
+                @endcan
 
+                @can('completar-citas')
                 @if (in_array($appointment->status, ['pending', 'confirmed']))
                     <form method="POST" action="{{ route('admin.appointments.complete', $appointment) }}" class="inline">
                         @csrf @method('PATCH')
@@ -60,7 +67,9 @@
                         </x-wire-button>
                     </form>
                 @endif
+                @endcan
 
+                @can('cancelar-citas')
                 @if (!in_array($appointment->status, ['cancelled', 'completed']))
                     <button type="button"
                         @click="cancelModal = true"
@@ -68,6 +77,7 @@
                         <i class="fa fa-ban"></i> Cancelar
                     </button>
                 @endif
+                @endcan
             </div>
         </div>
     </x-wire-card>
