@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Consulta;
 use App\Models\MotivoConsulta;
 use App\Models\Patologia;
 use App\Models\Patient;
@@ -42,6 +43,10 @@ class DappImport extends Command
             'archivo' => 'padres.csv',
             'label'   => 'padres',
         ],
+        'consultas' => [
+            'archivo' => 'consultas.csv',
+            'label'   => 'consultas',
+        ],
     ];
 
     /**
@@ -50,7 +55,7 @@ class DappImport extends Command
      * @var string
      */
     protected $signature = 'dapp:import
-        {tabla : Tabla a importar: coberturas|motivos|patologias|pacientes|madres|padres}
+        {tabla : Tabla a importar: coberturas|motivos|patologias|pacientes|madres|padres|consultas}
         {--tenant= : Slug/ID del tenant donde importar (sistema multi-tenant)}';
 
     /**
@@ -146,6 +151,7 @@ class DappImport extends Command
             'motivos'    => $this->importMotivo($row),
             'patologias' => $this->importPatologia($row),
             'pacientes'  => $this->importPaciente($row),
+            'consultas'  => $this->importConsulta($row),
             default      => false,
         };
     }
@@ -232,6 +238,62 @@ class DappImport extends Command
         );
 
         return $model->wasRecentlyCreated;
+    }
+
+    private function importConsulta(array $row): bool
+    {
+        $fecha      = trim($row['fecha'] ?? '');
+        $diagnostico = $this->sanitize($row['diagnostico'] ?? '');
+        $edad       = trim($row['edad'] ?? '');
+
+        if ($fecha === '' || $diagnostico === '') {
+            return false;
+        }
+
+        // Parsear edad "Xa. Xm. Xd." para calcular fecha de nacimiento aproximada
+        if (! preg_match('/^(\d+)a\.\s*(\d+)m\.\s*(\d+)\s*d\.$/', $edad, $m)) {
+            return false;
+        }
+
+        try {
+            $fechaConsulta = Carbon::parse($fecha);
+            $birthEstimated = $fechaConsulta->copy()
+                ->subYears((int) $m[1])
+                ->subMonths((int) $m[2])
+                ->subDays((int) $m[3]);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        // Buscar paciente con fecha de nacimiento en ventana de ±7 días
+        $patients = Patient::whereBetween('fecha_nacimiento', [
+            $birthEstimated->copy()->subDays(7)->toDateString(),
+            $birthEstimated->copy()->addDays(7)->toDateString(),
+        ])->get();
+
+        if ($patients->count() !== 1) {
+            return false; // Sin coincidencia o ambiguo
+        }
+
+        $patient = $patients->first();
+
+        // Evitar duplicados (misma fecha + paciente + diagnóstico)
+        $exists = Consulta::where('patient_id', $patient->id)
+            ->where('fecha', $fechaConsulta->toDateString())
+            ->where('diagnostico', $diagnostico)
+            ->exists();
+
+        if ($exists) {
+            return false;
+        }
+
+        Consulta::create([
+            'patient_id'  => $patient->id,
+            'fecha'       => $fechaConsulta->toDateString(),
+            'diagnostico' => mb_strtoupper($diagnostico),
+        ]);
+
+        return true;
     }
 
     /**
