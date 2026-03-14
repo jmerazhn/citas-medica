@@ -22,27 +22,27 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', DashboardController::class)->name('dashboard');
 
 // Roles — solo administradores
-Route::middleware('permission:ver-roles')->group(function () {
-    Route::resource('roles', RoleController::class)->only(['index', 'show']);
-});
 Route::middleware('permission:gestionar-roles')->group(function () {
     Route::resource('roles', RoleController::class)->except(['index', 'show']);
 });
+Route::middleware('permission:ver-roles')->group(function () {
+    Route::resource('roles', RoleController::class)->only(['index', 'show']);
+});
 
 // Usuarios
-Route::middleware('permission:ver-usuarios')->group(function () {
-    Route::resource('users', UserController::class)->only(['index', 'show']);
-});
 Route::middleware('permission:gestionar-usuarios')->group(function () {
     Route::resource('users', UserController::class)->except(['index', 'show']);
 });
+Route::middleware('permission:ver-usuarios')->group(function () {
+    Route::resource('users', UserController::class)->only(['index', 'show']);
+});
 
 // Pacientes
-Route::middleware('permission:ver-pacientes')->group(function () {
-    Route::resource('patients', PatientController::class)->only(['index', 'show']);
-});
 Route::middleware('permission:gestionar-pacientes')->group(function () {
     Route::resource('patients', PatientController::class)->except(['index', 'show']);
+});
+Route::middleware('permission:ver-pacientes')->group(function () {
+    Route::resource('patients', PatientController::class)->only(['index', 'show']);
 });
 
 // Expediente del paciente (nested, shallow)
@@ -58,13 +58,13 @@ Route::middleware('permission:gestionar-expediente')->group(function () {
         ->shallow()->except(['index', 'show']);
 });
 
+// Citas — gestionar (crear/editar) — debe ir antes para que /create no sea capturado por {appointment}
+Route::middleware('permission:gestionar-citas')->group(function () {
+    Route::resource('appointments', AppointmentController::class)->except(['index', 'show', 'destroy']);
+});
 // Citas — ver
 Route::middleware('permission:ver-citas')->group(function () {
     Route::resource('appointments', AppointmentController::class)->only(['index', 'show']);
-});
-// Citas — gestionar (crear/editar)
-Route::middleware('permission:gestionar-citas')->group(function () {
-    Route::resource('appointments', AppointmentController::class)->except(['index', 'show', 'destroy']);
 });
 // Citas — acciones de estado
 Route::middleware('permission:confirmar-citas')->group(function () {
@@ -91,19 +91,7 @@ Route::middleware('permission:gestionar-horarios')->group(function () {
     Route::put('doctors/{user}/schedules', [DoctorScheduleController::class, 'update'])->name('doctors.schedules.update');
 });
 
-// Catálogos
-Route::middleware('permission:ver-catalogos')->prefix('catalogos')->name('catalogos.')->group(function () {
-    Route::resource('motivos-consulta', MotivoConsultaController::class)
-        ->parameters(['motivos-consulta' => 'motivoConsulta'])->only(['index', 'show']);
-    Route::resource('planes-vacunacion', PlanVacunacionController::class)
-        ->parameters(['planes-vacunacion' => 'planVacunacion'])->only(['index', 'show']);
-    Route::resource('patologias', PatologiaCatalogoController::class)
-        ->parameters(['patologias' => 'patologia'])->only(['index', 'show']);
-    Route::resource('coberturas-sociales', SocialCoverageController::class)
-        ->parameters(['coberturas-sociales' => 'socialCoverage'])->only(['index', 'show']);
-    Route::resource('tablas-crecimiento', TablaCrecimientoController::class)
-        ->parameters(['tablas-crecimiento' => 'tablaCrecimiento'])->only(['index', 'show']);
-});
+// Catálogos — gestionar primero para que /create no sea capturado por {model}
 Route::middleware('permission:gestionar-catalogos')->prefix('catalogos')->name('catalogos.')->group(function () {
     Route::resource('motivos-consulta', MotivoConsultaController::class)
         ->parameters(['motivos-consulta' => 'motivoConsulta'])->except(['index', 'show']);
@@ -115,4 +103,16 @@ Route::middleware('permission:gestionar-catalogos')->prefix('catalogos')->name('
         ->parameters(['coberturas-sociales' => 'socialCoverage'])->except(['index', 'show']);
     Route::resource('tablas-crecimiento', TablaCrecimientoController::class)
         ->parameters(['tablas-crecimiento' => 'tablaCrecimiento'])->except(['index', 'show']);
+});
+Route::middleware('permission:ver-catalogos')->prefix('catalogos')->name('catalogos.')->group(function () {
+    Route::resource('motivos-consulta', MotivoConsultaController::class)
+        ->parameters(['motivos-consulta' => 'motivoConsulta'])->only(['index', 'show']);
+    Route::resource('planes-vacunacion', PlanVacunacionController::class)
+        ->parameters(['planes-vacunacion' => 'planVacunacion'])->only(['index', 'show']);
+    Route::resource('patologias', PatologiaCatalogoController::class)
+        ->parameters(['patologias' => 'patologia'])->only(['index', 'show']);
+    Route::resource('coberturas-sociales', SocialCoverageController::class)
+        ->parameters(['coberturas-sociales' => 'socialCoverage'])->only(['index', 'show']);
+    Route::resource('tablas-crecimiento', TablaCrecimientoController::class)
+        ->parameters(['tablas-crecimiento' => 'tablaCrecimiento'])->only(['index', 'show']);
 });
