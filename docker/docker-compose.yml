@@ -1,9 +1,7 @@
 services:
 
   citas-app:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: citas-medica:latest
     container_name: citas-app
     restart: unless-stopped
     env_file: ../.env
