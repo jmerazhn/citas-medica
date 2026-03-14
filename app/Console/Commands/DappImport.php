@@ -296,30 +296,67 @@ class DappImport extends Command
         return true;
     }
 
-    /**
-     * Las tablas madres/padres no se importan automáticamente porque la vinculación
-     * a registros de pacientes (campo madre/padre) requiere revisión manual para
-     * evitar asociaciones incorrectas por coincidencia de apellidos.
-     *
-     * Los archivos CSV quedan disponibles en dapp/output/ para consulta.
-     * Para vincular manualmente: Patient::find($id)->update(['madre' => $nombreCompleto])
-     */
     private function handleParents(string $tabla): int
     {
         $meta    = self::TABLAS[$tabla];
         $csvPath = base_path("dapp/output/{$meta['archivo']}");
 
-        $this->warn("Importación de {$meta['label']} no implementada de forma automática.");
-        $this->newLine();
-        $this->line('  La vinculación de madres/padres a pacientes requiere revisión');
-        $this->line('  manual para evitar asociaciones incorrectas por similitud de');
-        $this->line('  apellidos.');
-        $this->newLine();
-        $this->line("  CSV disponible para consulta: {$csvPath}");
-        $this->newLine();
-        $campo = $tabla === 'madres' ? 'madre' : 'padre';
-        $this->line('  Para vincular un registro manualmente (Tinker o migración):');
-        $this->line("    Patient::find(\$id)->update(['{$campo}' => \$nombreCompleto])");
+        if (! file_exists($csvPath)) {
+            $this->error("Archivo CSV no encontrado: {$csvPath}");
+            return self::FAILURE;
+        }
+
+        $rows = $this->readCsv($csvPath);
+        if (empty($rows)) {
+            $this->warn("El archivo CSV está vacío.");
+            return self::SUCCESS;
+        }
+
+        $campo     = $tabla === 'madres' ? 'madre' : 'padre';
+        $esMadre   = $tabla === 'madres';
+        $total     = count($rows);
+        $linked    = 0;
+        $skipped   = 0;
+
+        $this->info("Vinculando {$meta['label']} a pacientes ({$total} registros)...");
+
+        $this->withProgressBar($rows, function (array $row) use ($campo, $esMadre, &$linked, &$skipped) {
+            $nombreCompleto = $this->sanitize($row['nombre_completo'] ?? '');
+            $apellidos      = $this->sanitize($row['apellidos'] ?? '');
+
+            if ($nombreCompleto === '' || $apellidos === '') {
+                $skipped++;
+                return;
+            }
+
+            // Primer apellido del padre/madre
+            $primerApellido = mb_strtoupper(explode(' ', trim($apellidos))[0]);
+
+            if ($esMadre) {
+                // Segundo apellido del paciente debe coincidir con el primer apellido de la madre
+                $patients = Patient::whereRaw(
+                    "UPPER(SUBSTRING_INDEX(apellidos, ' ', -1)) = ?",
+                    [$primerApellido]
+                )->whereNull('madre')->get();
+            } else {
+                // Primer apellido del paciente debe coincidir con el primer apellido del padre
+                $patients = Patient::whereRaw(
+                    "UPPER(SUBSTRING_INDEX(apellidos, ' ', 1)) = ?",
+                    [$primerApellido]
+                )->whereNull('padre')->get();
+            }
+
+            if ($patients->count() !== 1) {
+                $skipped++;
+                return;
+            }
+
+            $patients->first()->update([$campo => mb_strtoupper($nombreCompleto)]);
+            $linked++;
+        });
+
+        $this->newLine(2);
+        $this->info("Completado: {$linked} vinculados, {$skipped} omitidos (sin coincidencia única).");
 
         return self::SUCCESS;
     }
