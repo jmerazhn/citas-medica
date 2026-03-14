@@ -2,6 +2,7 @@ FROM php:8.2-fpm
 
 # ── Sistema base ──────────────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     nginx \
     nodejs \
     npm \
