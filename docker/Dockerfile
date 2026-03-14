@@ -1,7 +1,7 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm
 
 # ── Sistema base ──────────────────────────────────────────────────────────────
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     nodejs \
     npm \
@@ -11,12 +11,12 @@ RUN apk add --no-cache \
     unzip \
     curl \
     libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libzip-dev \
-    oniguruma-dev \
-    icu-dev \
-    bash
+    libonig-dev \
+    libicu-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # ── Extensiones PHP ───────────────────────────────────────────────────────────
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -61,12 +61,13 @@ RUN chown -R www-data:www-data /var/www/citas \
 
 # ── Configuraciones ───────────────────────────────────────────────────────────
 COPY docker/nginx/nginx.conf       /etc/nginx/nginx.conf
-COPY docker/nginx/default.conf     /etc/nginx/http.d/default.conf
+COPY docker/nginx/default.conf     /etc/nginx/conf.d/default.conf
 COPY docker/php/php.ini            /usr/local/etc/php/conf.d/custom.ini
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh          /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+ && rm -f /etc/nginx/sites-enabled/default
 
 EXPOSE 80
 
